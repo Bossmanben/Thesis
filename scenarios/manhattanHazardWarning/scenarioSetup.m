@@ -297,13 +297,17 @@ DoubleValue(transmissionRange));
             
             % Log all vehicles including rogue ones
             firstRogueVehId = -1;
+%             secondRogueVehId = -1;
             if(config.numRogueVehicles > 0)
                 firstRogueVeh = config.rVehC.Get(0);
                 firstRogueVehId = firstRogueVeh.GetId();
+%                 secondRogueVeh = config.rVehC2.Get(0);
+%                 secondRogueVehId = secondRogueVeh.GetId();
             end
+%            visualizerTraces.logVehicles(config.numVehicles, config.numRogueVehicles, ...
+%                firstRogueVehId, secondRogueVehId);
             visualizerTraces.logVehicles(config.numVehicles, config.numRogueVehicles, ...
-                firstRogueVehId);
-            
+                firstRogueVehId);            
             % Position of vehicles is logged in log files with this  periodicity (in
             % millisecs). Smaller value facilitates smoothness in movement during
             % visualization but at the cost of simulation running time.

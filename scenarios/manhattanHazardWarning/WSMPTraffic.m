@@ -22,11 +22,13 @@ classdef WSMPTraffic
             channel = CCH;
             switch(args.pType)
                 case 'hazardWarning'
+                    new = args.pType;
                     timeS = Simulator.Now();
                     % Stop sending hazard warning if hazard has been removed 
                     if((timeS*1000) < args.repairTimestamp) % TODO: Some better alternative 
+                        disp(args.nodeId);
                         [payloadBuf, payloadSize]= WSMPTraffic.constructHazardWarning(args.nodeId, args.rInfo, args.mm);
-                        WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, args.nodeId, channel);
+                        WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, args.nodeId, channel, new);
                         nodeListInfo.nodeHazardWarningTxCount(args.nodeId+1, 1);
                     else
                         % Schedule sending of 'hazard removed' packet so that stopped
@@ -53,12 +55,14 @@ classdef WSMPTraffic
                 case 'positionBeacon'
                     % Construct and send dummy position beacons to create
                     % network interference
+                    new = args.pType;
                     [payloadBuf, payloadSize]= WSMPTraffic.constructPositionBeacon(args.nodeId, args.mm);
-                    WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, args.nodeId, channel);
+                    WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, args.nodeId, channel, new);
                 case 'hazardRemovedPkt'
                     % Construct and send 'hazard removed' packet
+                    new = args.pType;
                     [payloadBuf, payloadSize]= WSMPTraffic.constructHazardRemovedPkt(args.nodeId, args.rInfo);
-                    WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, args.nodeId, channel);
+                    WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, args.nodeId, channel, new);
             end
             
             % re-scheduling according to periodicity with 10ms randomness
@@ -164,12 +168,24 @@ classdef WSMPTraffic
         end
                 
         % Send the WSMP packet
-        function sendWSMPPkt(payloadBuf, payloadSize,nodeId, channel)
+        function sendWSMPPkt(payloadBuf, payloadSize,nodeId, channel, new)
             bssWildcard = 'FF:FF:FF:FF:FF:FF';
             WSMP_PROT_NUMBER = '0x88DC';
             SocketInterface.Send(payloadBuf, payloadSize, nodeId, channel, ...
                 WSMP_PROT_NUMBER, bssWildcard);
-            nodeListInfo.nodeTxCount(nodeId+1, 1);
+            switch(new)
+                case 'hazardWarning'
+                    nodeListInfo.nodeTxCount(nodeId+1, 1, 10);
+                case 'positionBeacon'
+                    nodeListInfo.nodeTxCount(nodeId+1, 1);
+                case 'hazardRemovedPkt'
+                    nodeListInfo.nodeTxCount(nodeId+1, 1);
+            end
+            
+            switch(new)
+                case 'hazardWarning'
+%                     disp('idk what this is');
+            end
         end
         
         

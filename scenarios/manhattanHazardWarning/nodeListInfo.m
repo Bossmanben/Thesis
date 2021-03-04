@@ -29,11 +29,31 @@ classdef nodeListInfo < handle
             
         end
         % Set/Get TX count of vehicle
-        function txCount = nodeTxCount(vehicleId, pktCount)
+        function txCount = nodeTxCount(vehicleId, pktCount, hazardWarning)
             persistent txCountList;
             if(nargin >= 2)  % Using as a set function.
                 if(pktCount>0)
+                    if(hazardWarning == 10)
+                        %disp('does it go here?');
+%                         disp('vehId');
+%                         disp(vehicleId);
+%                         disp('pktCount');
+%                         disp(pktCount);
+%                         disp(length(txCountList));
+%                         disp('txCount');
+%                         disp(txCountList(vehicleId));
+                    end
                     txCountList(vehicleId) = txCountList(vehicleId) + pktCount;
+                    if(hazardWarning == 10)
+%                         disp('does it go here?');
+%                         disp('vehId');
+%                         disp(vehicleId);
+%                         disp('pktCount');
+%                         disp(pktCount);
+%                         disp(length(txCountList));
+%                         disp('txCount');
+%                         disp(txCountList(vehicleId));
+                    end
                 else
                     txCountList(vehicleId) =0;
                 end

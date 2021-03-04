@@ -32,7 +32,7 @@ classdef visualizerTraces
             persistent countSetFlag;
             if(isempty(countSetFlag)) % Init stats count to 0
                 for i=0:(args.numVehicles-1)
-                    nodeListInfo.nodeTxCount(i+1, 0);
+                    nodeListInfo.nodeTxCount(i+1, 0, 0);
                     nodeListInfo.nodeRxCount(i+1, 0);
                     nodeListInfo.nodeHazardWarningRxCount(i+1, 0);
                     nodeListInfo.nodeHazardWarningTxCount(i+1, 0);
@@ -50,7 +50,7 @@ classdef visualizerTraces
                 %                 stats.getSetStats(args.numVehicles+1,'MacRxDrop',0);
                 %                 stats.getSetStats(args.numVehicles+1,'RxError',0);
                 %
-                nodeListInfo.nodeTxCount(args.numVehicles+args.numRogueVehicles+1, 0);
+                nodeListInfo.nodeTxCount(args.numVehicles+args.numRogueVehicles+2, 0, 0);
                 nodeListInfo.nodeRxCount(args.numVehicles+args.numRogueVehicles+1, 0);
                 nodeListInfo.nodeHazardWarningRxCount(args.numVehicles + ...
                                                args.numRogueVehicles+1, 0);
@@ -139,7 +139,7 @@ classdef visualizerTraces
         
         % Log Initial position of a all vehicles
         function logVehicles(numVehicles , numRogueVehicles, firstRogueVehId)
-            
+%         function logVehicles(numVehicles , numRogueVehicles, firstRogueVehId, secondRogueVehId)    
             % Logging number of vehicles
             file = fopen('scenario_info.txt','a+');
             fprintf(file,'%f %f',numVehicles, numRogueVehicles);
@@ -174,11 +174,23 @@ classdef visualizerTraces
                 fclose(file);
             end
             
-            
+%             for i=0:(numRogueVehicles-1)
+%                 node = NodeList.GetNode(secondRogueVehId + i);
+%                 mmObj = node.GetObject(mobilityModel);
+%                 currentPosition = mmObj.GetPosition ();
+%                 timeS = Simulator.Now();
+%                 file = fopen('log_file.txt','a+');
+%                 fprintf (file,'%f %d %d %f %f %f %d %d %d\n',timeS, ...
+%                 visualizerTraces.VEHICLE_ENTRY_EVENT, secondRogueVehId + i, ...
+%                 currentPosition(1), currentPosition(2), currentPosition(3), ...
+%                 -1, -1, -1);
+%                 fclose(file);
+%            end
         end
         
         % Log hazard position
         function logHazard(hazardId)
+            %disp('hi');
             timeS = Simulator.Now();
             node = NodeList.GetNode(hazardId);
             mmObj = node.GetObject('ConstantVelocityMobilityModel');

@@ -30,9 +30,11 @@ eventMatrix = eventMatrix';
 %GridConfigMatrx = scenarioInfoMatrix';
 numOfVehicles = scenarioInfoMatrix(6);
 numOfRogueVehicles = scenarioInfoMatrix(7);
-numOfHazards = 1;
+numOfHazards = 2;
 %Graphical objects creation
-nodeObject = gobjects(numOfVehicles +numOfHazards +numOfRogueVehicles );
+disp(numOfRogueVehicles);
+nodeObject = gobjects(numOfVehicles +numOfHazards +numOfRogueVehicles);
+
 
 %% Create figure
 fig = figure();

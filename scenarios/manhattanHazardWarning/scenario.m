@@ -119,7 +119,11 @@ hazardLoc = {'+y' 3 3}; %Define hazrd location
 hazardEntryT = 5000; % Hazard occurence timestamp in milliseconds.
 hazardWarningPeriodicity = 150; % In milliseconds
 
-h2 = {'+y' 2 3};
+hazardLoc2 = {'+y' 4 3};
+hazardEntryT2 = 6000;
+
+hazardLoc3 = {'+y' 2 3};
+hazardEntryT3 = 7000;
 
 % Set number of Rogue vehicles
 numRogueVehicles = 40;
@@ -234,6 +238,18 @@ rogueVehConfig.pktPeriodicity = positionBeaconPeriodicity;
 
 rVehC = scenarioSetup.installRogueVehicles(rogueVehConfig);
 
+%% Install second rogue vehicle for second hazard
+% rogueVehConfig2.numVehicles = numRogueVehicles;
+% rogueVehConfig2.wavePhy = wavePhy;
+% rogueVehConfig2.txGain = rogueTxGain;
+% rogueVehConfig2.rxGain = rogueRxGain;
+% rogueVehConfig2.rxNoiseFigure = rogueRxNoiseFigure;
+% rogueVehConfig2.waveMac = waveMac;
+% rogueVehConfig2.hazardLoc = hazardLoc2;
+% rogueVehConfig2.maxVehSpeed = maxRogueVehSpeed;
+% rogueVehConfig2.pktPeriodicity = positionBeaconPeriodicity;
+% 
+% rVehC2 = scenarioSetup.installRogueVehicles(rogueVehConfig2);
 
 %% Configure hazard related parameters and schedule hazard creation
 hazardConfig.warningPeriodicity = hazardWarningPeriodicity; % Periodicity of warning packet in milliseconds.
@@ -252,12 +268,28 @@ hazardConfig.mac = waveMac;
 
 scenarioSetup.configureHazard(hazardConfig);
 
+%% Configure second hazard 
+hazardConfig2.warningPeriodicity = hazardWarningPeriodicity;
+hazardConfig2.offsetFromStart = 0.8*streetLen;
+hazardConfig2.entryTime = hazardEntryT;
+hazardRepairT2 = simTime*1000 - hazardEntryT;
+hazardConfig2.repairTime = hazardRepairT;
+hazardConfig2.location = hazardLoc2;
+hazardConfig2.phy = wavePhy;
+hazardConfig2.txGain = hazardTxGain;
+hazardConfig2.rxGain = hazardRxGain;
+hazardConfig2.rxNoiseFigure = hazardRxNoiseFigure;
+hazardConfig2.mac = waveMac;
+
+scenarioSetup.configureHazard(hazardConfig2);
+
 %% Set up Visualization Logging
 config.hBlocks = hBlocks;
 config.vBlocks = vBlocks;
 config.streetWidth = streetWidth;
 config.streetLen = streetLen;
 config.rVehC = rVehC;
+% config.rVehC2 = rVehC2;
 config.numVehicles = numVehicles;
 config.numRogueVehicles = numRogueVehicles;
 config.logPeriodicity = 500;

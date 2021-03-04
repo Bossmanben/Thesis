@@ -68,9 +68,9 @@ classdef hazard
             WSMPArgs.repairTimestamp = hazardArgs.entryTime + hazardArgs.repairTime;
             WSMPArgs.hazardId = nodeId;
             % start sending periodic hazard warning
-            WSMPTraffic.runWSMPApp(WSMPArgs);
-            %Simulator.Schedule('WSMPTraffic.runWSMPApp', 1, WSMPArgs);
-            
+            disp('hey');
+            %WSMPTraffic.runWSMPApp(WSMPArgs);
+            Simulator.Schedule('WSMPTraffic.runWSMPApp', 1, WSMPArgs);
             hazard.getSetHazardTimeSlot(hazardArgs.entryTime, ...
                 hazardArgs.entryTime + hazardArgs.repairTime);
             visualizerTraces.logHazard(nodeId);
