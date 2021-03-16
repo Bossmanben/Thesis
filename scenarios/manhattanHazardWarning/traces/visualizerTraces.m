@@ -32,7 +32,7 @@ classdef visualizerTraces
             persistent countSetFlag;
             if(isempty(countSetFlag)) % Init stats count to 0
                 for i=0:(args.numVehicles-1)
-                    nodeListInfo.nodeTxCount(i+1, 0, 0);
+                    nodeListInfo.nodeTxCount(i+1, 0);
                     nodeListInfo.nodeRxCount(i+1, 0);
                     nodeListInfo.nodeHazardWarningRxCount(i+1, 0);
                     nodeListInfo.nodeHazardWarningTxCount(i+1, 0);
@@ -50,12 +50,24 @@ classdef visualizerTraces
                 %                 stats.getSetStats(args.numVehicles+1,'MacRxDrop',0);
                 %                 stats.getSetStats(args.numVehicles+1,'RxError',0);
                 %
-                nodeListInfo.nodeTxCount(args.numVehicles+args.numRogueVehicles+2, 0, 0);
+                nodeListInfo.nodeTxCount(args.numVehicles+args.numRogueVehicles+1, 0);
                 nodeListInfo.nodeRxCount(args.numVehicles+args.numRogueVehicles+1, 0);
+                nodeListInfo.nodeTxCount(args.numVehicles+args.numRogueVehicles+2, 0);
+                nodeListInfo.nodeRxCount(args.numVehicles+args.numRogueVehicles+2, 0);
+%                 nodeListInfo.nodeTxCount(args.numVehicles+args.numRogueVehicles+3, 0);
+%                 nodeListInfo.nodeRxCount(args.numVehicles+args.numRogueVehicles+3, 0);
                 nodeListInfo.nodeHazardWarningRxCount(args.numVehicles + ...
                                                args.numRogueVehicles+1, 0);
                 nodeListInfo.nodeHazardWarningTxCount(args.numVehicles + ...
                                                args.numRogueVehicles+1, 0);
+                nodeListInfo.nodeHazardWarningRxCount(args.numVehicles + ...
+                                               args.numRogueVehicles+2, 0);
+                nodeListInfo.nodeHazardWarningTxCount(args.numVehicles + ...
+                                               args.numRogueVehicles+2, 0);
+%                 nodeListInfo.nodeHazardWarningRxCount(args.numVehicles + ...
+%                                                args.numRogueVehicles+3, 0);
+%                 nodeListInfo.nodeHazardWarningTxCount(args.numVehicles + ...
+%                                                args.numRogueVehicles+3, 0);
                 stats.getSetStats(args.numVehicles+args.numRogueVehicles + ...
                                                1,'MacRxDrop',0);
                 stats.getSetStats(args.numVehicles+args.numRogueVehicles + ...
@@ -98,8 +110,8 @@ classdef visualizerTraces
             end
             
             
-            txCount =  nodeListInfo.nodeTxCount(args.numVehicles+args.numRogueVehicles+1);
-            rxCount =  nodeListInfo.nodeRxCount(args.numVehicles+args.numRogueVehicles+1);
+            txCount =  nodeListInfo.nodeTxCount(args.numVehicles+args.numRogueVehicles+2);
+            rxCount =  nodeListInfo.nodeRxCount(args.numVehicles+args.numRogueVehicles+2);
             hazardWarningTxCount = nodeListInfo.nodeHazardWarningTxCount( ...
                                  args.numVehicles+args.numRogueVehicles+1);
             hazardWarningRxCount = nodeListInfo.nodeHazardWarningRxCount(...

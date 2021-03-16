@@ -33,7 +33,16 @@ classdef vehicularMobility < handle
             node = NodeList.GetNode(args.nodeId);
             % Getting the mobility model object
             mmObj = node.GetObject(args.mm);
-            
+            [roadId1, roadId2] = hazard.getSetHazardRoad();
+            [hazardPos1, hazardPos2] = hazard.getSetHazardPos();
+%             disp('roadID1');
+%             disp(roadId1);
+%             disp('roadID2');
+%             disp(roadId2);
+%             disp('hazardPos1');
+%             disp(hazardPos1);
+%             disp('hazardPos2');
+%             disp(hazardPos2);
             % Check whether vehicle has crashed into hazard. If not only
             % then move to next road
             collisionFlag = 0;
@@ -41,14 +50,55 @@ classdef vehicularMobility < handle
             if(hazard.getSetHazardPresenceFlag() == 1)
                 % Check if vehicle has completed at least 1 road
                 if(args.routeInfo.getCurrentStreetIndex() > 0)
-                    % Check if vehicle is on the road having hazard
+                    % Check if vehicle is on the road having hazard 1
                     if(args.routeInfo.getStreetIdByIndex() == ...
-                            hazard.getSetHazardRoad())
+                            roadId1)
                         %Check whether vehicle collided with hazard
                         vehPos = mmObj.GetPosition();
                         velocity = mmObj.GetVelocity();
-                        hazardPos = hazard.getSetHazardPos();
-                        distance = norm(vehPos - hazardPos);
+%                         hazardPos = hazard.getSetHazardPos();
+%                         disp(hazardPos1);
+                        distance = norm(vehPos - hazardPos1);
+                        timeGap = distance/(norm(velocity));
+                        timeS = Simulator.Now();
+                        VehTSHazardPos = (timeS - timeGap)*1000; % In millisecs
+                        
+                        % Get entry and exit time of hazard
+                        [hazardEntryT, hazardExitT] = hazard.getSetHazardTimeSlot();
+                        
+                        % Check if hazard was present when it crossed the
+                        % hazard position
+                        if(VehTSHazardPos >= hazardEntryT && ...
+                                VehTSHazardPos <= hazardExitT)
+%                             disp('does it ever go here?');
+                            
+                            collisionFlag = 1;
+                            mmObj.SetVelocity([0 0 0]);
+                            nodeListInfo.hazardCollisionCount(1);
+                            % Logging collision event due to hazard.
+                            time = Simulator.Now();
+                            file = fopen('log_file.txt','a+');
+                            fprintf (file,'%f %d %d %f %f %f %d %d %d\n', time, ...
+                                visualizerTraces.HAZARD_COLLISION_EVENT, ...
+                                args.nodeId, roadId1, 0, ...
+                                0, -1, -1, -1);
+%                             fprintf (file,'%f %d %d %f %f %f %d %d %d\n', time, ...
+%                                 visualizerTraces.HAZARD_COLLISION_EVENT, ...
+%                                 args.nodeId, hazard.getSetHazardRoad(), 0, ...
+%                                 0, -1, -1, -1);
+                            fclose(file);
+                        end
+                        
+                    end
+                    % Check if vehicle is on the road having hazard 2
+                    if(args.routeInfo.getStreetIdByIndex() == ...
+                            roadId2)
+                        %Check whether vehicle collided with hazard
+                        vehPos = mmObj.GetPosition();
+                        velocity = mmObj.GetVelocity();
+%                         hazardPos = hazard.getSetHazardPos();
+%                         disp(hazardPos2);
+                        distance = norm(vehPos - hazardPos2);
                         timeGap = distance/(norm(velocity));
                         timeS = Simulator.Now();
                         VehTSHazardPos = (timeS - timeGap)*1000; % In millisecs
@@ -68,8 +118,12 @@ classdef vehicularMobility < handle
                             file = fopen('log_file.txt','a+');
                             fprintf (file,'%f %d %d %f %f %f %d %d %d\n', time, ...
                                 visualizerTraces.HAZARD_COLLISION_EVENT, ...
-                                args.nodeId, hazard.getSetHazardRoad(), 0, ...
+                                args.nodeId, roadId2, 0, ...
                                 0, -1, -1, -1);
+%                             fprintf (file,'%f %d %d %f %f %f %d %d %d\n', time, ...
+%                                 visualizerTraces.HAZARD_COLLISION_EVENT, ...
+%                                 args.nodeId, hazard.getSetHazardRoad(), 0, ...
+%                                 0, -1, -1, -1);
                             fclose(file);
                         end
                         
