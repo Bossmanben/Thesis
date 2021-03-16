@@ -310,7 +310,7 @@ classdef vehicularRoute < handle
         % This function returns the routeVector containing journey of
         % all vehicles as a sequence of valid road Ids with all
         % vehicles having the road containing hazard in the journey.
-        function routeVector = createRouteVector(journeyList, hazardRoadId)
+        function routeVector = createRouteVector(journeyList, hazardRoadId1, hazardRoadId2)
             % Get manhattan topology object
             topology = nodeListInfo.getSetTopology();
             routeVector = cell(length(journeyList));
@@ -331,16 +331,20 @@ classdef vehicularRoute < handle
                 destRoadId =  topology.getStreetIdForBlock( ...
                     endHBlock, endVBlock, endRoadDir);
                 
-                hopRoadId = hazardRoadId;
+                hopRoadId1 = hazardRoadId1;
+                hopRoadId2 = hazardRoadId2;
                 
-                % Find route from source road to end of hop-road
-                subRoute1 = vehicularRoute.findRoute(sourceRoadId, hopRoadId);
+                % Find route from source road to end of hop-road1
+                subRoute1 = vehicularRoute.findRoute(sourceRoadId, hopRoadId1);
+                
+                % Find route from hop-road1 to hop-road2
+                subRoute2 = vehicularRoute.findRoute(hopRoadId1, hopRoadId2);
                 
                 % Find route from hop road to final destination
-                subRoute2 = vehicularRoute.findRoute(hopRoadId, destRoadId);
+                subRoute3 = vehicularRoute.findRoute(hopRoadId2, destRoadId);
                 
                 % Concatenate the routes to form complete route
-                routeVector{index} = horzcat(subRoute1, subRoute2(2:end));
+                routeVector{index} = horzcat(subRoute1, subRoute2(2:end), subRoute3(2:end));
                 
             end
                                                

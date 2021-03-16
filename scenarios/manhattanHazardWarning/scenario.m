@@ -114,16 +114,24 @@ journeyList = {
 speedMatrix = [19 20 22 21 91 21 20 22 100 16 12];
 
 % Hazard appears on this road.
-hazardLoc = {'+y' 3 3}; %Define hazrd location
+hazardLoc = {'+x' 2 1}; %Define hazrd location
+% fakeLoc = {'-y' 3 2};
+fakeLoc = {'+x' 3 1};
 
 hazardEntryT = 5000; % Hazard occurence timestamp in milliseconds.
-hazardWarningPeriodicity = 150; % In milliseconds
+% hazardWarningPeriodicity = 150; % In milliseconds
+hazardWarningPeriodicity = 4000; % In milliseconds
+fakehazardWarningPeriodicity = 150;
 
-hazardLoc2 = {'+y' 4 3};
+hazardLoc2 = {'-x' 3 4};
+% fakeLoc2 = {'+x' 2 1};
+fakeLoc2 = {'-x' 2 4};
 hazardEntryT2 = 6000;
 
-hazardLoc3 = {'+y' 2 3};
-hazardEntryT3 = 7000;
+hazardLoc3 = {'+x' 2 1};
+fakeLoc3 = {'+y' 2 2};
+
+hazardLoc4 = {'-y' 3 2};
 
 % Set number of Rogue vehicles
 numRogueVehicles = 40;
@@ -168,7 +176,7 @@ createManhattanGrid(topology, hBlocks, vBlocks, streetWidth, streetLen);
 nodeListInfo.getSetTopology(topology);
 
 %% Find routes based on source and destination passing through hazard
-routeVector = scenarioSetup.createRoutes(journeyList, hazardLoc);
+routeVector = scenarioSetup.createRoutes(journeyList, hazardLoc, hazardLoc2);
 
 %% Initialize the NS3-Mex Interface to maintain state of the simulation.
 initNs3Interface();
@@ -253,6 +261,7 @@ rVehC = scenarioSetup.installRogueVehicles(rogueVehConfig);
 
 %% Configure hazard related parameters and schedule hazard creation
 hazardConfig.warningPeriodicity = hazardWarningPeriodicity; % Periodicity of warning packet in milliseconds.
+hazardConfig.fakewarningPeriodicity = fakehazardWarningPeriodicity;
 hazardConfig.offsetFromStart = 0.8*streetLen;  % Hazard location offset from start of road
 hazardConfig.entryTime = hazardEntryT; % In milliseconds.
 hazardRepairT = simTime*1000 - hazardEntryT; %Time required to repair the hazard in milliseconds.
@@ -265,23 +274,57 @@ hazardConfig.txGain = hazardTxGain;
 hazardConfig.rxGain = hazardRxGain;
 hazardConfig.rxNoiseFigure = hazardRxNoiseFigure;
 hazardConfig.mac = waveMac;
+hazardConfig.fakeLoc = fakeLoc;
 
 scenarioSetup.configureHazard(hazardConfig);
 
 %% Configure second hazard 
 hazardConfig2.warningPeriodicity = hazardWarningPeriodicity;
+hazardConfig2.fakewarningPeriodicity = fakehazardWarningPeriodicity;
 hazardConfig2.offsetFromStart = 0.8*streetLen;
 hazardConfig2.entryTime = hazardEntryT;
 hazardRepairT2 = simTime*1000 - hazardEntryT;
-hazardConfig2.repairTime = hazardRepairT;
+hazardConfig2.repairTime = hazardRepairT2;
 hazardConfig2.location = hazardLoc2;
 hazardConfig2.phy = wavePhy;
 hazardConfig2.txGain = hazardTxGain;
 hazardConfig2.rxGain = hazardRxGain;
 hazardConfig2.rxNoiseFigure = hazardRxNoiseFigure;
 hazardConfig2.mac = waveMac;
+hazardConfig2.fakeLoc = fakeLoc2;
 
 scenarioSetup.configureHazard(hazardConfig2);
+
+% %% Configure third hazard 
+% hazardConfig3.warningPeriodicity = hazardWarningPeriodicity;
+% hazardConfig3.offsetFromStart = 0.8*streetLen;
+% hazardConfig3.entryTime = hazardEntryT;
+% hazardRepairT3 = simTime*1000 - hazardEntryT;
+% hazardConfig3.repairTime = hazardRepairT3;
+% hazardConfig3.location = hazardLoc3;
+% hazardConfig3.phy = wavePhy;
+% hazardConfig3.txGain = hazardTxGain;
+% hazardConfig3.rxGain = hazardRxGain;
+% hazardConfig3.rxNoiseFigure = hazardRxNoiseFigure;
+% hazardConfig3.mac = waveMac;
+% hazardConfig3.fakeLoc = fakeLoc3;
+% 
+% scenarioSetup.configureHazard(hazardConfig3);
+% 
+% %% Configure fourth hazard 
+% hazardConfig4.warningPeriodicity = hazardWarningPeriodicity;
+% hazardConfig4.offsetFromStart = 0.8*streetLen;
+% hazardConfig4.entryTime = hazardEntryT;
+% hazardRepairT4 = simTime*1000 - hazardEntryT;
+% hazardConfig4.repairTime = hazardRepairT4;
+% hazardConfig4.location = hazardLoc4;
+% hazardConfig4.phy = wavePhy;
+% hazardConfig4.txGain = hazardTxGain;
+% hazardConfig4.rxGain = hazardRxGain;
+% hazardConfig4.rxNoiseFigure = hazardRxNoiseFigure;
+% hazardConfig4.mac = waveMac;
+% 
+% scenarioSetup.configureHazard(hazardConfig4);
 
 %% Set up Visualization Logging
 config.hBlocks = hBlocks;

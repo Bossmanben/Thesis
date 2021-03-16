@@ -12,12 +12,15 @@ classdef scenarioSetup
     methods(Static)
         % Returns route for each vehicle based on respective source and
         % destination
-        function routeVector = createRoutes(journeyList, hazardLoc)
+        function routeVector = createRoutes(journeyList, hazardLoc, hazardLoc2)
             topology = nodeListInfo.getSetTopology();
-            hazardRoadId = topology.getStreetIdForBlock(cell2mat(hazardLoc(2)), ...
+            hazardRoadId1 = topology.getStreetIdForBlock(cell2mat(hazardLoc(2)), ...
                 cell2mat(hazardLoc(3)), ...
                 cell2mat(hazardLoc(1)));
-            routeVector = vehicularRoute.createRouteVector(journeyList, hazardRoadId);
+            hazardRoadId2 = topology.getStreetIdForBlock(cell2mat(hazardLoc2(2)), ...
+                cell2mat(hazardLoc2(3)), ...
+                cell2mat(hazardLoc2(1)));
+            routeVector = vehicularRoute.createRouteVector(journeyList, hazardRoadId1, hazardRoadId2);
         end
         
         % Create and returns vehicle container
