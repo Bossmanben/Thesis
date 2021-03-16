@@ -171,21 +171,15 @@ classdef WSMPTraffic
         function sendWSMPPkt(payloadBuf, payloadSize,nodeId, channel, new)
             bssWildcard = 'FF:FF:FF:FF:FF:FF';
             WSMP_PROT_NUMBER = '0x88DC';
+%             switch(new)
+%                 case 'hazardWarning'
+%                     disp('packet sent');
+%                     disp(nodeId);
+%             end
+            
             SocketInterface.Send(payloadBuf, payloadSize, nodeId, channel, ...
                 WSMP_PROT_NUMBER, bssWildcard);
-            switch(new)
-                case 'hazardWarning'
-                    nodeListInfo.nodeTxCount(nodeId+1, 1, 10);
-                case 'positionBeacon'
-                    nodeListInfo.nodeTxCount(nodeId+1, 1);
-                case 'hazardRemovedPkt'
-                    nodeListInfo.nodeTxCount(nodeId+1, 1);
-            end
-            
-            switch(new)
-                case 'hazardWarning'
-%                     disp('idk what this is');
-            end
+            nodeListInfo.nodeTxCount(nodeId+1, 1);
         end
         
         
