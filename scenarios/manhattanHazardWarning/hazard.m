@@ -22,14 +22,16 @@ classdef hazard
                 hazardArgs.mac, m_hc);
             
             % Register RX callback on hazard
-            %SocketInterface.RegisterRXCallback(roadHazards, @WaveRXCallback);
+            SocketInterface.RegisterRXCallback(roadHazards, @WaveRXCallback);
             
             nodeId = node.GetId();
+            %disp(nodeId);
             hazardPositionInfo = vehicularRoute ; % Instantiate route object
             % Set route
             hazardPositionInfo.setRoute(nodeId+1, hazardArgs.roadId);
             nodeListInfo.routeObj(nodeId+1,hazardPositionInfo);
             vehicularMobility.setMobilityModel(nodeId,'ConstantVelocityMobilityModel');
+            
             mobConfig.topology = hazardArgs.topology;
             mobConfig.nodeId = nodeId;
             mobConfig.routeInfo = hazardPositionInfo;
@@ -67,9 +69,10 @@ classdef hazard
             WSMPArgs.periodicity = hazardArgs.warningPeriodicity;
             WSMPArgs.repairTimestamp = hazardArgs.entryTime + hazardArgs.repairTime;
             WSMPArgs.hazardId = nodeId;
+            %disp(WSMPArgs.nodeId);
             % start sending periodic hazard warning
-            WSMPTraffic.runWSMPApp(WSMPArgs);
-            %Simulator.Schedule('WSMPTraffic.runWSMPApp', 1, WSMPArgs);
+            %WSMPTraffic.runWSMPApp(WSMPArgs);
+            Simulator.Schedule('WSMPTraffic.runWSMPApp', 1, WSMPArgs);
             
             hazard.getSetHazardTimeSlot(hazardArgs.entryTime, ...
                 hazardArgs.entryTime + hazardArgs.repairTime);
@@ -110,27 +113,45 @@ classdef hazard
             hazardPresenceFlag = hazardFlag;
         end
         % Get/Set hazard Road
-        function [roadId] = getSetHazardRoad(road)
-            persistent hazardRoadId;
-            if(isempty(hazardRoadId))
-                hazardRoadId = 0;
+        function [roadId1, roadId2] = getSetHazardRoad(road)
+            persistent hazardRoadId1;
+            persistent hazardRoadId2;
+            if(isempty(hazardRoadId1))
+                hazardRoadId1 = 0;
+            end
+            if(isempty(hazardRoadId2))
+                hazardRoadId2 = 0;
             end
             if(nargin==1)
-                hazardRoadId = road;
+                if(hazardRoadId1 == 0)
+                    hazardRoadId1 = road;
+                else
+                    hazardRoadId2 = road;
+                end
             end
-            roadId = hazardRoadId;
+            roadId1 = hazardRoadId1;
+            roadId2 = hazardRoadId2;
         end
         
         % Get/Set hazard Position
-        function [position] = getSetHazardPos(pos)
-            persistent hazardPos;
-            if(isempty(hazardPos))
-                hazardPos = [0 0 0];
+        function [position1,position2] = getSetHazardPos(pos)
+            persistent hazardPos1;
+            persistent hazardPos2;
+            if(isempty(hazardPos1))
+                hazardPos1 = [0 0 0];
+            end
+            if(isempty(hazardPos2))
+                hazardPos2 = [0 0 0];
             end
             if(nargin==1)
-                hazardPos = pos;
+                if(hazardPos1 == [0 0 0])
+                    hazardPos1 = pos;
+                else
+                    hazardPos2 = pos;
+                end
             end
-            position = hazardPos;
+            position1 = hazardPos1;
+            position2 = hazardPos2;
         end
         
     end

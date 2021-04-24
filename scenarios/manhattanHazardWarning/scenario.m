@@ -48,6 +48,9 @@ addpath(genpath(fullfile(pwd,'../../mlCode/mlWrappers')));
 addpath(genpath(fullfile(pwd,'manhattanTopologyModel')));
 addpath(genpath(fullfile(pwd,'traces')));
 
+addpath(genpath(fullfile(pwd, 'toolbox')));
+addpath(genpath(fullfile(pwd, 'app')));
+
 %% Cleaning if at all last iteration did not exit cleanly
 clc;
 close all;
@@ -58,7 +61,7 @@ clear functions;
 %% Scenario Configuration Section
 
 % Configure simulation run time (In seconds)
-simTime = 70;
+simTime = 40;
 
 % Manhattan-grid configuration
 hBlocks = 4 ; % Number of horizontal blocks
@@ -92,15 +95,19 @@ journeyList = {
     % Source Road      % Destination Road
     { {'+x' 4 2}        {'+y' 2 4 } } %  Vehicle 1 journey
     { {'-y' 1 3}        {'+y' 4 3 } } %  Vehicle 2 journey
-    { {'+y' 1 3}        {'-y' 2 1 } } %      .3
-    { {'+y' 2 1}        {'-y' 1 4 } } %      .4
-    { {'+x' 3 1}        {'-y' 3 4 } } %      .5
-    %{ {'-x' 1 2}        {'-x' 2 3 } } %      .6
-    %{ {'+x' 4 1}        {'-x' 1 4 } } %      .7
-    %{ {'-y' 2 1}        {'+x' 2 2 } } %      .8
-    %{ {'+y' 1 1}        {'+x' 2 2 } } %      .9
-    %{ {'+x' 4 2}        {'+x' 4 1 } } %      .10
-    %{ {'-y' 3 2}        {'-y' 3 1 } } %      .11
+    { {'+y' 1 3}        {'-y' 2 1 } } %      .
+    { {'+y' 2 1}        {'-y' 1 4 } } %      .
+    { {'+x' 3 1}        {'-y' 3 4 } } %      .
+    { {'-x' 1 2}        {'-x' 2 3 } } %      .
+    { {'+x' 4 1}        {'-x' 1 4 } } %      .
+    { {'-y' 2 1}        {'+x' 2 2 } } %      .
+    { {'+y' 1 1}        {'+x' 2 2 } } %      .
+    { {'+x' 4 2}        {'+x' 4 1 } } %      .
+    { {'-y' 3 2}        {'-y' 3 1 } } %      .
+    { {'+y' 2 3}        {'+x' 1 4 } } %      .
+    { {'+y' 4 3}        {'-y' 1 3 } } %      .
+    { {'-x' 2 3}        {'+x' 3 1 } } %      .
+    { {'+x' 3 2}        {'+y' 1 3 } } %      .
     };
 
 
@@ -109,17 +116,10 @@ journeyList = {
 % to the value at index equal to its ID in this matrix. If this matrix does
 % not define speed for all, a random value between 15 to 20 is
 % chosen.
-%speedMatrix = [89 90 82 100 91 89 87 85 99];
-%speedMatrix = [95 90 98 100 91 94 87 85 99 86 90];
-speedMatrix = [19 20 22 21 91 21 20 22 100 16 12];
+speedMatrix = [19 20 22 21 91 21 20 22 100 16 12 90 82 67 50];
 
-% Hazard appears on this road.
-hazardLoc = {'+y' 3 3}; %Define hazrd location
-
-hazardEntryT = 5000; % Hazard occurence timestamp in milliseconds.
-hazardWarningPeriodicity = 150; % In milliseconds
-
-h2 = {'+y' 2 3};
+hazardLoc = {'+x' 2 1}; %Define hazrd location
+hazardLoc2 = {'-x' 3 4};
 
 % Set number of Rogue vehicles
 numRogueVehicles = 40;
@@ -136,11 +136,6 @@ vehRxNoiseFigure = 7;
 hazardTxGain = 1;
 hazardRxGain = 1;
 hazardRxNoiseFigure = 7;
-
-%Phy configuration of Road-Side-unit
-RSUTxGain = 1;
-RSURxGain = 1;
-RSURxNoiseFigure = 7;
 
 % Rogue Vehicle physical layer properties.
 rogueTxGain = 6;
@@ -164,7 +159,7 @@ createManhattanGrid(topology, hBlocks, vBlocks, streetWidth, streetLen);
 nodeListInfo.getSetTopology(topology);
 
 %% Find routes based on source and destination passing through hazard
-routeVector = scenarioSetup.createRoutes(journeyList, hazardLoc);
+routeVector = scenarioSetup.createRoutes(journeyList, hazardLoc,hazardLoc2);
 
 %% Initialize the NS3-Mex Interface to maintain state of the simulation.
 initNs3Interface();
@@ -173,7 +168,6 @@ initNs3Interface();
 % Number of vehicles equal to number of journeys provided.
 numVehicles = length(routeVector);
 regVehContainer = scenarioSetup.createVehicles(numVehicles);
-
 
 %% Create and install protocol stack including Channel on regular vehicles.
 % Create Phy with configured values.
@@ -236,6 +230,11 @@ rVehC = scenarioSetup.installRogueVehicles(rogueVehConfig);
 
 
 %% Configure hazard related parameters and schedule hazard creation
+
+% Hazard appears on this road.
+hazardEntryT = 5000; % Hazard occurence timestamp in milliseconds.
+hazardWarningPeriodicity = 150; % In milliseconds
+
 hazardConfig.warningPeriodicity = hazardWarningPeriodicity; % Periodicity of warning packet in milliseconds.
 hazardConfig.offsetFromStart = 0.8*streetLen;  % Hazard location offset from start of road
 hazardConfig.entryTime = hazardEntryT; % In milliseconds.
@@ -243,7 +242,7 @@ hazardRepairT = simTime*1000 - hazardEntryT; %Time required to repair the hazard
 %Here making sure that it stays till the end of
 %simulation.
 hazardConfig.repairTime = hazardRepairT; % In milliseconds
-hazardConfig.location = hazardLoc;
+hazardConfig.location=hazardLoc;
 hazardConfig.phy = wavePhy;
 hazardConfig.txGain = hazardTxGain;
 hazardConfig.rxGain = hazardRxGain;
@@ -251,6 +250,47 @@ hazardConfig.rxNoiseFigure = hazardRxNoiseFigure;
 hazardConfig.mac = waveMac;
 
 scenarioSetup.configureHazard(hazardConfig);
+
+
+%% Second Hazard Integration
+
+hazardEntryT2 = 6000;
+
+hazardConfig2.warningPeriodicity = hazardWarningPeriodicity; % Periodicity of warning packet in milliseconds.
+hazardConfig2.offsetFromStart = 0.8*streetLen;  % Hazard location offset from start of road
+hazardConfig2.entryTime = hazardEntryT2; % In milliseconds.
+hazardRepairT = simTime*1000 - hazardEntryT2; %Time required to repair the hazard in milliseconds.
+hazardConfig2.repairTime = hazardRepairT; % In milliseconds
+hazardConfig2.location=hazardLoc2;
+hazardConfig2.phy = wavePhy;
+hazardConfig2.txGain = hazardTxGain;
+hazardConfig2.rxGain = hazardRxGain;
+hazardConfig2.rxNoiseFigure = hazardRxNoiseFigure;
+hazardConfig2.mac = waveMac;
+
+scenarioSetup.configureHazard(hazardConfig2);
+
+%% Fake Hazard Integration
+hazardConfigs=[hazardConfig;hazardConfig;hazardConfig;hazardConfig;hazardConfig;
+                hazardConfig;hazardConfig;hazardConfig;hazardConfig;hazardConfig];
+locs = [
+        {'-x' 2 2}
+        {'+y' 2 2}
+        {'-y' 1 2}
+        {'-y' 2 2}
+        {'+y' 3 2}
+        {'+y' 3 3}
+        {'-y' 2 3}
+        {'-y' 3 3}
+        {'+y' 4 3}
+        {'+y' 4 2}
+        ];
+    
+for i = 1:length(hazardConfigs)
+    hazardConfigs(i).location = locs(i,1:3);
+    scenarioSetup.configureHazard(hazardConfigs(i));
+    %disp(hazardConfigs(i));
+end
 
 %% Set up Visualization Logging
 config.hBlocks = hBlocks;
@@ -266,6 +306,9 @@ scenarioSetup.setUpVisualizationAndTraces(config);
 %% Run simulation
 Simulator.Stop(simTime);
 disp('Simulation Started ................');
+
+%MATLAB_Blockchain
+
 Simulator.Run();
 
 %% Deinitialization

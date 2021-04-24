@@ -30,7 +30,7 @@ eventMatrix = eventMatrix';
 %GridConfigMatrx = scenarioInfoMatrix';
 numOfVehicles = scenarioInfoMatrix(6);
 numOfRogueVehicles = scenarioInfoMatrix(7);
-numOfHazards = 1;
+numOfHazards = 2;
 %Graphical objects creation
 nodeObject = gobjects(numOfVehicles +numOfHazards +numOfRogueVehicles );
 
@@ -64,26 +64,26 @@ set(btn1,'Units','normalized');
 hold on;
 
 btn3 = uicontrol('Style', 'pushbutton', 'String', '1X',...
-    'Position', [580+30 670-30 40 30],'Tag','pushbutton1',...
+    'Position', [580+30 640 40 30],'Tag','pushbutton1',...
     'Callback', @call2);
 btn3.BackgroundColor = [.5 .5 .5];
 set(btn3,'Units','normalized');
 
 
 btn6 = uicontrol('Style', 'pushbutton', 'String', '4X',...
-    'Position', [740+30 670-30 40 30],'Tag','pushbutton1',...
+    'Position', [740+30 640 40 30],'Tag','pushbutton1',...
     'Callback', @call3);
 btn6.BackgroundColor = [.5 .5 .5];
 set(btn6,'Units','normalized');
 
 btn7 = uicontrol('Style', 'pushbutton', 'String', '0.5X',...
-    'Position', [500+30 670-30 40 30],'Tag','pushbutton1',...
+    'Position', [500+30 640 40 30],'Tag','pushbutton1',...
     'Callback', @call4);
 btn7.BackgroundColor = [.5 .5 .5];
 set(btn7,'Units','normalized');
 
 btn8 = uicontrol('Style', 'pushbutton', 'String', '2X',...
-    'Position', [660+30 670-30 40 30],'Tag','pushbutton1',...
+    'Position', [660+30 640 40 30],'Tag','pushbutton1',...
     'Callback', @call5);
 btn8.BackgroundColor = [.5 .5 .5];
 set(btn8,'Units','normalized');
@@ -100,18 +100,18 @@ set(sld,'Units','normalized');
 %% Event log Box creation
 eventLog = uicontrol('Style', 'text', 'Position',[220 600 200 30], 'String', 'EVENT LOG', ...
     'FontSize', 12, 'FontWeight', 'bold', 'backgroundColor', [.8 .8 .8]);
-log_box = uicontrol('Style','edit','Position',[220 150 200 450],'FontSize',12,...
+log_box = uicontrol('Style','edit','Position',[220 150 200 450],'FontSize',8,...
     'HorizontalAlignment','left','min',0,'max',2,'enable','inactive');
 set(log_box,'backgroundcolor',[211,211,211]/255);
 set(log_box,'foregroundColor','black');
 set(eventLog,'Units','normalized');
 set(log_box,'Units','normalized');
 %% Packet count table
-packetMeasureHeading = uicontrol('Style', 'text', 'Position',[1250-360 (570-200+(22*(numOfVehicles + ...
+packetMeasureHeading = uicontrol('Style', 'text', 'Position',[1250-360 (370+(22*(numOfVehicles + ...
     numOfHazards))) 320 30], 'String', 'Packet Measurements','FontSize', ...
     12, 'FontWeight', 'bold', 'backgroundColor', [.8 .8 .8]);
 packetTable = uitable('data', zeros(numOfVehicles + numOfHazards, 5),'Position', ...
-    [1250-360 570-200 320 (22*(numOfVehicles + numOfHazards))+30]  );
+    [900 300 320 (22*(numOfVehicles + numOfHazards))+30]  );
 %'<html><font size=3>AppTx</font size></html>'
 packetTable.ColumnName = {'<html><font size=2>AppTx</font size></html>', ...
     '<html><font size=2>AppTx (Hazard)</font size></html>', ...
@@ -123,9 +123,9 @@ packetTable.ColumnEditable = false;
 set(packetMeasureHeading,'Units','normalized');
 set(packetTable,'Units','normalized');
 %% Success/Failure count table
-sucFaiEvent = uicontrol('Style', 'text', 'Position',[1250-360 430-200 320 40], 'String', 'Sucess/Failure Events','FontSize', 12, ...
+sucFaiEvent = uicontrol('Style', 'text', 'Position',[1250-360 230 320 40], 'String', 'Sucess/Failure Events','FontSize', 12, ...
     'FontWeight', 'bold', 'backgroundColor', [.8 .8 .8]);
-sucFailTable = uitable('data', zeros(1, 3),'Position', [1250-360 400-200 320 70]  );
+sucFailTable = uitable('data', zeros(1, 3),'Position', [1250-360 200 320 70]  );
 sucFailTable.ColumnName = {'Hazard Avoidance','Hazard Stoppages','Hazard Collision'};
 sucFailTable.ColumnEditable = false;
 set(sucFaiEvent,'Units','normalized');
@@ -221,7 +221,7 @@ while(ii< row)
                 'Fontsize', 8, 'Fontweight', 'bold','HorizontalAlignment', 'center');
         end
         drawnow limitrate
-        % Hazard Entry Event
+        % Hazard Entry  Event
     elseif(eventMatrix(ii,2) == 2)
         nodeObject(eventMatrix(ii,3)+1) = text(eventMatrix(ii,4),eventMatrix(ii,5),'X','Color','red','Fontsize',12, ...
             'Fontweight', 'bold', 'HorizontalAlignment', 'center');
