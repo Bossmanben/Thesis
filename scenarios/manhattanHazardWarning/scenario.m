@@ -58,6 +58,7 @@ clear functions;
 %% Scenario Configuration Section
 
 % Configure simulation run time (In seconds)
+% simTime = 70;
 simTime = 70;
 
 % Manhattan-grid configuration
@@ -123,8 +124,8 @@ hazardLoc = {'+x' 2 1}; %Define hazrd location
 fakeLoc = {'+x' 3 1};
 
 hazardEntryT = 5000; % Hazard occurence timestamp in milliseconds.
-% hazardWarningPeriodicity = 150; % In milliseconds
-hazardWarningPeriodicity = 4000; % In milliseconds
+hazardWarningPeriodicity = 50; % In milliseconds
+% hazardWarningPeriodicity = 4000; % In milliseconds
 fakehazardWarningPeriodicity = 150;
 
 hazardLoc2 = {'-x' 3 4};
@@ -157,6 +158,8 @@ hazardRxNoiseFigure = 7;
 RSUTxGain = 1;
 RSURxGain = 1;
 RSURxNoiseFigure = 7;
+RSULocation = {'-y' 3 2};
+RSUWarningPeriodicity = 150;
 
 % Rogue Vehicle physical layer properties.
 rogueTxGain = 6;
@@ -330,6 +333,24 @@ scenarioSetup.configureHazard(hazardConfig2);
 % 
 % scenarioSetup.configureHazard(hazardConfig4);
 
+%% Create and place RSU at a certain position and install warning app
+RSUConfig.waveMac = waveMac;
+RSUConfig.wavePhy = wavePhy;
+RSUConfig.txGain = RSUTxGain;
+RSUConfig.rxGain = RSURxGain;
+RSUConfig.rxNoiseFigure = RSURxNoiseFigure;
+%RSUConfig.platoonLane = platoonLane;          %%Might not be needed
+RSUConfig.rsulocation = RSULocation;           %%replace platoonLane w/ loc
+RSUConfig.topology = topology;
+%RSUConfig.roughPatchStart = roughPatchStart;
+%RSUConfig.roughPatchLen = roughPatchLen;
+%RSUConfig.roughPatchSpeedLim = roughPatchSpeedLim;
+%RSUConfig.laneWidth = laneWidth;
+RSUConfig.WarningPeriodicity = RSUWarningPeriodicity;
+RSUConfig.offsetFromStart = 0.8*streetLen;      %experiment w/ this
+
+rsuContainer = scenarioSetup.installRSU(RSUConfig);
+
 %% Set up Visualization Logging
 config.hBlocks = hBlocks;
 config.vBlocks = vBlocks;
@@ -340,6 +361,7 @@ config.rVehC = rVehC;
 config.numVehicles = numVehicles;
 config.numRogueVehicles = numRogueVehicles;
 config.logPeriodicity = 500;
+config.rsuC = rsuContainer;
 scenarioSetup.setUpVisualizationAndTraces(config);
 
 %% Run simulation

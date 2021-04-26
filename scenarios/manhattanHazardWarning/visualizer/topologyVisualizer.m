@@ -306,7 +306,16 @@ while(ii< row)
         log_box.String = '';
         set(log_box,'String',str); % display the string
         line_no = line_no+1;
-        set(nodeObject(eventMatrix(ii,3)+1),'String','X', 'Color', 'black', 'Fontsize',6+randi(8));
+        set(nodeObject(eventMatrix(ii,3)+1),'String','X', 'Color', 'black', 'Fontsize',6+randi(8));    
+    elseif(eventMatrix(ii,2) == 11)
+        %RSU Installation
+        base = 20;
+        height = 7;
+        eventMatrix(ii,4) = eventMatrix(ii,4) - base;
+        nodeObject(eventMatrix(ii,3)+1) = patch([eventMatrix(ii,4) eventMatrix(ii,4) + base/2 eventMatrix(ii,4) + base], ...
+            [-3 height-3 -3], 'blue');
+        text(eventMatrix(ii,4)-4 , -10, 'RSU', 'Color', 'magenta', 'Fontsize', 15, 'FontWeight', 'bold');
+        drawnow limitrate
     end
     
     if(slid == 1)

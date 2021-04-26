@@ -27,5 +27,12 @@ classdef SocketInterface < handle
             mexSocketInterface('ReceivePacket', netDevContainer.get(), ...
                 func2str(callback));
         end
+
+        function RegisternewRXCallback(netDevContainer, callback)
+            % Registers the MATLAB RX packet callback for the given net device.
+            
+            mexSocketInterface('ReceiveNewPacket', netDevContainer.get(), ...
+                func2str(callback));
+        end
     end
 end

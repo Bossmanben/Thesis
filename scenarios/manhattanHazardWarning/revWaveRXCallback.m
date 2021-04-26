@@ -8,19 +8,13 @@
 % of the GNU General Public License version 2.
 %
 
-function WaveRXCallback(nodeId, pkt, pktSize, protocol)
-% disp('WaveRXCallback is working');
-% payload = pkt(WSMPTraffic.headerSize+1:end);
-% payloadBuf = payload.';
-% disp(payloadBuf);
-% if(pkt(1) == 1)
-%     disp('receive truly works for rsu');
-% end
+function revWaveRXCallback(nodeId, pkt, pktSize, protocol)
+% disp('revWaveRXCallback is working');
 WSMP_PROT_NUM = 35036;
 % Check if it is a WSMP packet.
 if(protocol ==  WSMP_PROT_NUM)
-%     WSMPTraffic.receivePkt(nodeId, pkt, pktSize);
-    WSMPTraffic.revreceivePkt(nodeId, pkt, pktSize);
+%     WSMPTraffic.revreceivePkt(nodeId, pkt, pktSize);
+    WSMPTraffic.receivePkt(nodeId, pkt, pktSize);
 end
 %TODO Handle NON-WSMP packets
 end

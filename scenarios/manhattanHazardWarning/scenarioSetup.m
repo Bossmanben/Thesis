@@ -290,6 +290,70 @@ DoubleValue(transmissionRange));
             Simulator.Schedule('hazard.createHazard', config.entryTime, config);
         end
         
+        % Create and install WAVE stack on RSU. Install WSMP app to send 
+        % periodic 'hazard warning'
+        function rsuContainer = installRSU(config)
+            config.wavePhy.Set('TxGain', DoubleValue(config.txGain));
+            config.wavePhy.Set('RxGain', DoubleValue(config.rxGain));
+            config.wavePhy.Set('RxNoiseFigure', DoubleValue(config.rxNoiseFigure));
+            waveHelper = WaveHelper.Default();
+            
+            rsuContainer = NodeContainer();
+            rsuContainer.Create(1);
+            
+            rsuDeviceC = waveHelper.Install(config.wavePhy, config.waveMac, ...
+                rsuContainer);
+            
+            %Register Rx callback on all RSU devices
+            %SocketInterface.RegisterRXCallback(rsuDeviceC, @revWaveRXCallback);
+            SocketInterface.RegisternewRXCallback(rsuDeviceC, @revWaveRXCallback);
+            
+            rsu = rsuContainer.Get(0);
+            rsuId = rsu.GetId();
+            
+            %laneInfo = config.topology.getLaneInfo(config.platoonLane); 
+            %position = laneInfo.startPosition + [config.roughPatchStart
+            %(-config.laneWidth/2) 0];
+            %mobModelObj = rsu.GetObject('ConstantPositionMobilityModel');
+            %mobModelObj.SetPosition(position);
+            
+            %Replacement code for line 307-311
+            RSURoadId = config.topology.getStreetIdForBlock(cell2mat(config.rsulocation(2)), ...
+                cell2mat(config.rsulocation(3)), cell2mat(config.rsulocation(1)));
+            config.rsuroadId = RSURoadId;
+            
+            rsuPositionInfo = vehicularRoute;
+            % Set route
+            rsuPositionInfo.setRoute(rsuId+1, RSURoadId);
+            nodeListInfo.routeObj(rsuId+1, rsuPositionInfo);
+            vehicularMobility.setMobilityModel(rsuId, 'ConstantPositionMobilityModel');
+            
+            mobConfig.topology = config.topology;
+            mobConfig.nodeId = rsuId;
+            mobConfig.routeInfo = rsuPositionInfo;
+            mobConfig.mm = 'ConstantPositionMobilityModel';         %%changed
+            mobConfig.acceleration = 0;
+            mobConfig.speed = 0;    %RSU is stationary
+            
+            %Offset from start of road;
+            mobConfig.offset = config.offsetFromStart;      %should it have offset?
+            %Set mobility with configured parameters
+            vehicularMobility.setVehiclePosAndVelocity(mobConfig);
+            
+            %Configure 'hazard' warning application and install it.
+%             args.pType = 'rsuWarning';
+%             args.nodeId = rsuId;
+%             args.rInfo = config.rsuroadId;
+%             args.mm = 'ConstantPositionMobilityModel';              %%changed
+%             args.periodicity = config.WarningPeriodicity;
+%             %args.roughPatchLen = config.roughPatchLen;
+%             %args.speedLim = config.roughPatchSpeedLim;
+%             %Scheduloing start time propertional to Id
+%             appStartTime = (args.periodicity*(rsuId))/5.5;
+%             Simulator.Schedule('WSMPTraffic.runWSMPApp', appStartTime, args);
+        end
+        
+        
         % Set up visualization
         function setUpVisualizationAndTraces(config)
             visualizerTraces.initLog(); % Create log files
@@ -304,13 +368,15 @@ DoubleValue(transmissionRange));
             if(config.numRogueVehicles > 0)
                 firstRogueVeh = config.rVehC.Get(0);
                 firstRogueVehId = firstRogueVeh.GetId();
-%                 secondRogueVeh = config.rVehC2.Get(0);
-%                 secondRogueVehId = secondRogueVeh.GetId();
             end
-%            visualizerTraces.logVehicles(config.numVehicles, config.numRogueVehicles, ...
-%                firstRogueVehId, secondRogueVehId);
+            
+            rsu = config.rsuC.Get(0);
+            rsuId = rsu.GetId();
+            
             visualizerTraces.logVehicles(config.numVehicles, config.numRogueVehicles, ...
-                firstRogueVehId);            
+                firstRogueVehId, rsuId);       
+%             visualizerTraces.logVehicles(config.numVehicles, config.numRogueVehicles, ...
+%                 firstRogueVehId); 
             % Position of vehicles is logged in log files with this  periodicity (in
             % millisecs). Smaller value facilitates smoothness in movement during
             % visualization but at the cost of simulation running time.
@@ -321,8 +387,11 @@ DoubleValue(transmissionRange));
             traceArgs.mm = 'ConstantVelocityMobilityModel';
             traceArgs.firstRogueVehId = firstRogueVehId;
             %traceArgs.hazardId = hazardId;
+            traceArgs.rsuId = rsuId;  %Id of RSU
+            
             
             % Log mobility of vehicles
+            %visualizerTraces.logEventsAndStats(logArgs);   %tplatoon version
             visualizerTraces.logVehicularPositionAndStats(traceArgs);
             
             %% Connect Traces (callbacks) for notification

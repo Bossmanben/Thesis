@@ -13,6 +13,7 @@ using namespace ns3;
 
 const static uint16_t WSMP_PROT_NUMBER = 0x88DC;
 std::string rxCallback;
+std::string rxCallbacknew;
 static int MEXIsLoaded = 0;
 
 void cleanup(void)
@@ -50,15 +51,45 @@ bool ReceivePkt (Ptr<NetDevice> dev, Ptr<const Packet> pkt, uint16_t mode, const
     return true;
 }
 
+bool ReceivePktnew (Ptr<NetDevice> dev, Ptr<const Packet> pkt, uint16_t mode, const Address &sender)
+{
+    unsigned char buf[MAX_RECV_BUFFER_SIZE]= {0};
+    
+    /** Accept only if received packet size is less than max buffer size */
+    if(pkt->GetSize() <= MAX_RECV_BUFFER_SIZE)
+    {
+        pkt->CopyData (&buf[0], pkt->GetSize());
+        mxArray *mwPktnew = mxCreateNumericMatrix(pkt->GetSize(), 1, mxUINT8_CLASS, mxREAL);
+        
+        mxArray *node_idnew = mxCreateDoubleMatrix(1, 1, mxREAL);
+        *(mxGetPr(node_idnew)) = Simulator::GetContext();
+        
+        mxArray *protocolnew = mxCreateDoubleMatrix(1, 1, mxREAL);
+        *(mxGetPr(protocolnew)) = mode;
+        
+        mxArray  *pkt_sizenew = mxCreateDoubleMatrix(1, 1, mxREAL);
+        *(mxGetPr(pkt_sizenew)) = pkt->GetSize();
+        
+        unsigned char *startPtrnew = ((unsigned char*)(mxGetPr(mwPktnew)));
+        memcpy(startPtrnew,buf,pkt->GetSize());
+        
+        
+        mxArray* argsnew[] = {node_idnew, mwPktnew, pkt_sizenew, protocolnew};
+        mexCallMATLABWithTrap(0, nullptr, 4, argsnew, rxCallbacknew.c_str());
+    }
+    return true;
+}
+
 typedef enum methodType
 {
     SEND_PACKET,
     RECEIVE_PACKET,
+    RECEIVE_NEW_PACKET,
     TOTAL_METHODS
 }methodType_t;
 
 
-static char methodNames[TOTAL_METHODS][CMD_BUFFER_SIZE] = {"SendPacket", "ReceivePacket"};
+static char methodNames[TOTAL_METHODS][CMD_BUFFER_SIZE] = {"SendPacket", "ReceivePacket", "ReceiveNewPacket"};
 
 methodType_t identifyMethod(const char* cmd)
 {
@@ -99,6 +130,7 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
     {
         mexErrMsgTxt("Check your inputs");
     }
+    
     switch(identifyMethod(cmd))
     {
         case SEND_PACKET:
@@ -159,6 +191,26 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
                 device->SetReceiveCallback (MakeCallback(&ReceivePkt)); /* enabled for wsm recv callback */
             }
             
+            break;
+        }
+
+        case RECEIVE_NEW_PACKET:
+        {
+            if ((nlhs != 0) || (nrhs > 3))
+            {
+                mexErrMsgTxt("enter correct number of input and output args");
+                return;
+            }
+            rxCallbacknew = std::string(mxArrayToString(prhs[2]));
+            MemMngmt *tst3 = bindMngrHasListElem ((MemMngmt *)(*((uint64_t *)mxGetData(prhs[1]))));
+            NetDeviceContainer* const& netDevCnew = (reinterpret_cast<NetDeviceContainer*>(tst3->vptr));
+            for (uint32_t j = 0; j != netDevCnew->GetN (); ++j)
+            {
+                /**dynamic casts netdevice to wave netdevice */
+                Ptr<WaveNetDevice> devicenew = DynamicCast<WaveNetDevice> (netDevCnew->Get (j));
+                devicenew->SetReceiveCallback (MakeCallback(&ReceivePktnew));
+            }
+
             break;
         }
     }
