@@ -26,18 +26,9 @@ classdef WSMPTraffic
                     timeS = Simulator.Now();
                     % Stop sending hazard warning if hazard has been removed 
                     if((timeS*1000) < args.repairTimestamp) % TODO: Some better alternative 
-                        %disp(args.nodeId);
                         [payloadBuf, payloadSize]= WSMPTraffic.constructHazardWarning(args.nodeId, args.rInfo, args.mm);
-%                         disp('payloadBuf2');
-%                         disp('u send the hazard warning here');
-%                         disp(payloadBuf);
                         WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, args.nodeId, channel);
-                        disp('nodeId');
-                        disp(args.nodeId);
-                        disp('hazard sends warning packet');
-                        nodeListInfo.nodeHazardWarningTxCount(args.nodeId+1, 1);
-%                         disp('u send the hazard warning here');
-%                         disp(payloadBuf);
+                        nodeListInfo.nodeHazardWarningTxCount(args.nodeId+1, 1);                      
                     else
                         % Schedule sending of 'hazard removed' packet so that stopped
                         % vehicles can resume journey.
@@ -221,45 +212,41 @@ classdef WSMPTraffic
             WSMP_PROT_NUMBER = '0x88DC';
             SocketInterface.Send(payloadBuf, payloadSize, nodeId, channel, ...
                 WSMP_PROT_NUMBER, bssWildcard);
-% %             if(payloadBuf(1) == 4)
-% %                  disp('send truly works for vehicle');
-% %                  disp('nodeId');
-% %                  disp(nodeId);
-% %                  disp(payloadBuf);
-% %             end
-            if(payloadBuf(1) == 1)
-                 disp('send truly works for rsu');
-                 disp('nodeId');
-                 disp(nodeId);
-                 disp(payloadBuf);
+            if(payloadBuf(1) == 4)
+                 disp('pkt type 4 sent to vehicle');
             end
-%             disp('send works');
+            if(payloadBuf(1) == 1)
+                 disp('pkt type 1 sent to vehicle and rsu');
+            end
             nodeListInfo.nodeTxCount(nodeId+1, 1);
-%             disp('this is what u send in wsmp');
-%             disp(payloadBuf);
-%             if(payloadBuf(1) == 1)
-%                 disp('nodeId');
-%                 disp(nodeId);
-%                 disp('send truly works for vehicle/hazard');
-%                 disp(payloadBuf);
-%             end
         end
         
         
-        % Receive packet handler for RSU 
+        % Receive packet handler for RSU -> for vehicle (temp)
         % 'nodedId' is receiving vehicleId
         function receivePkt(nodeId, pkt, length)
             payload = pkt(WSMPTraffic.headerSize+1:end);
             payloadBuf = payload.';
-%             disp('does receive function happen');
             nodeListInfo.nodeRxCount(nodeId+1, 1); % Upading rx pkt count
             switch(payload(1)) % first byte in payload is pkt type
                 case WSMPTraffic.hazardWarning
-                    %do nothing
                     %do blockchain here
+                    disp('Vehicle: send pkt 1 to rsu');
+                    payloadBuf = payload.';
+                    payloadBuf(1) = 1;
+                    payloadBuf(4) = nodeId;
+                    payloadS = size(payloadBuf);
+                    payloadSize = payloadS(2);
+                    CCH = 178;
+                    channel = CCH;                  
+                    WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, nodeId, channel);
+                    nodeListInfo.nodeHazardWarningTxCount(nodeId+1, 1);
+%                     WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, nodeId, channel);
+%                     nodeListInfo.nodeHazardWarningTxCount(nodeId+1, 1);
+                    
                     nodeListInfo.nodeHazardWarningRxCount(nodeId+1, 1);
                     mobilityIntelligence.handleHazardWarning(nodeId, ...
-                        payload, length-WSMPTraffic.headerSize); 
+                        payload, length-WSMPTraffic.headerSize);
                 case WSMPTraffic.positionBeacon
                     % Do nothing
                 case WSMPTraffic.hazardRemovedPkt
@@ -267,35 +254,28 @@ classdef WSMPTraffic
                         payload, length-WSMPTraffic.headerSize);
                 case WSMPTraffic.rsuGeneralPkt
                     %do blockchain here
+                    
+                    disp('Vehicle: receive pkt type 4 from rsu');
                     nodeId = payloadBuf(4);
                     payloadBuf(4) = 0;
                     payload = payloadBuf.';
                     nodeListInfo.nodeHazardWarningRxCount(nodeId+1, 1);
                     mobilityIntelligence.handleHazardWarning(nodeId, ...
                         payload, length-WSMPTraffic.headerSize);  
-                     disp('vehicle receives unique packets');
-                     disp('nodeId');
-                     disp(nodeId);
-                     disp(payloadBuf);
-                     disp(payload);
             end
             
         end
         
-        % Receive packet handler for rsu 
+        % Receive packet handler for VEHICLE -> for RSU (temp)
         function revreceivePkt(nodeId, pkt, length)
             payload = pkt(WSMPTraffic.headerSize+1:end);
             payloadBuf = payload.';
-            
-%             if(payload(1) == 1)
-%                 disp('rsu receives warning packet');
-%             end
             nodeListInfo.nodeRxCount(nodeId+1, 1); % Upading rx pkt count
             switch(payload(1)) % first byte in payload is pkt type
                 case WSMPTraffic.hazardWarning
-%                     nodeListInfo.nodeHazardWarningRxCount(nodeId+1, 1);
-%                     mobilityIntelligence.handleHazardWarning(nodeId, ...
-%                         payload, length-WSMPTraffic.headerSize);
+                    
+                    disp('RSU: send pkt type 4 from rsu to vehicle');
+
                     %some blockchain stuff
                     
                     payloadBuf = payload.';
@@ -305,17 +285,17 @@ classdef WSMPTraffic
                     payloadSize = payloadS(2);
                     channel = 178;                    
                     WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, nodeId, channel);
+                    nodeListInfo.nodeHazardWarningTxCount(nodeId+1, 1);
                     WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, nodeId, channel);
-%                     disp('rsu sends unique packets');
-                    disp('rsu receives packets');
-                    disp('nodeId');
-                    disp(nodeId);
-                    disp(payloadBuf);
+                    nodeListInfo.nodeHazardWarningTxCount(nodeId+1, 1);
+
                 case WSMPTraffic.positionBeacon
                     % Do nothing
                 case WSMPTraffic.hazardRemovedPkt
                     mobilityIntelligence.handleHazardRemovedPkt(nodeId, ...
                         payload, length-WSMPTraffic.headerSize);
+                case WSMPTraffic.rsuGeneralPkt
+                    % Do something
             end
             
         end

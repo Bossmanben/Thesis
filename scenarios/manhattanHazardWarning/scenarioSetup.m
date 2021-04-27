@@ -306,7 +306,7 @@ DoubleValue(transmissionRange));
             
             %Register Rx callback on all RSU devices
             %SocketInterface.RegisterRXCallback(rsuDeviceC, @revWaveRXCallback);
-            SocketInterface.RegisternewRXCallback(rsuDeviceC, @revWaveRXCallback);
+            SocketInterface.RegisterRXCallback(rsuDeviceC, @WaveRXCallback);
             
             rsu = rsuContainer.Get(0);
             rsuId = rsu.GetId();

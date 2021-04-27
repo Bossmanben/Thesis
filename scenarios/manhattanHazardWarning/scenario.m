@@ -59,7 +59,7 @@ clear functions;
 
 % Configure simulation run time (In seconds)
 % simTime = 70;
-simTime = 70;
+simTime = 50;
 
 % Manhattan-grid configuration
 hBlocks = 4 ; % Number of horizontal blocks
@@ -100,12 +100,12 @@ journeyList = {
     { {'+x' 4 1}        {'-x' 1 4 } } %      .7
     { {'-y' 2 1}        {'+x' 2 2 } } %      .8
     { {'+y' 1 1}        {'+x' 2 2 } } %      .9
-    { {'+x' 4 2}        {'+x' 4 1 } } %      .10
-    { {'-y' 3 2}        {'-y' 3 1 } } %      .11   
-    { {'+y' 2 3}        {'+x' 1 4 } } %      .12
-    { {'+y' 4 3}        {'-y' 1 3 } } %      .13
-    { {'-x' 2 3}        {'+x' 3 1 } } %      .14
-    { {'+x' 3 2}        {'+y' 1 3 } } %      .15
+%     { {'+x' 4 2}        {'+x' 4 1 } } %      .10
+%     { {'-y' 3 2}        {'-y' 3 1 } } %      .11   
+%     { {'+y' 2 3}        {'+x' 1 4 } } %      .12
+%     { {'+y' 4 3}        {'-y' 1 3 } } %      .13
+%     { {'-x' 2 3}        {'+x' 3 1 } } %      .14
+%     { {'+x' 3 2}        {'+y' 1 3 } } %      .15
     };
 
 
@@ -214,8 +214,8 @@ waveMac = scenarioSetup.createDefaultWaveMac();
 netDevices = scenarioSetup.installWaveStack(wavePhy, waveMac, regVehContainer);
 
 % Register RX callback on vehicles.
-SocketInterface.RegisterRXCallback(netDevices, @WaveRXCallback);
-
+% SocketInterface.RegisterRXCallback(netDevices, @WaveRXCallback);
+SocketInterface.RegisternewRXCallback(netDevices, @revWaveRXCallback);
 
 %% Attach routes, mobility, packet application to regular vehicles.
 % Install mobility on vehicles according to their respective routes. 'WSMP
@@ -339,13 +339,8 @@ RSUConfig.wavePhy = wavePhy;
 RSUConfig.txGain = RSUTxGain;
 RSUConfig.rxGain = RSURxGain;
 RSUConfig.rxNoiseFigure = RSURxNoiseFigure;
-%RSUConfig.platoonLane = platoonLane;          %%Might not be needed
 RSUConfig.rsulocation = RSULocation;           %%replace platoonLane w/ loc
 RSUConfig.topology = topology;
-%RSUConfig.roughPatchStart = roughPatchStart;
-%RSUConfig.roughPatchLen = roughPatchLen;
-%RSUConfig.roughPatchSpeedLim = roughPatchSpeedLim;
-%RSUConfig.laneWidth = laneWidth;
 RSUConfig.WarningPeriodicity = RSUWarningPeriodicity;
 RSUConfig.offsetFromStart = 0.8*streetLen;      %experiment w/ this
 
