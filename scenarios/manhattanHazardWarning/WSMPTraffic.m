@@ -212,12 +212,12 @@ classdef WSMPTraffic
             WSMP_PROT_NUMBER = '0x88DC';
             SocketInterface.Send(payloadBuf, payloadSize, nodeId, channel, ...
                 WSMP_PROT_NUMBER, bssWildcard);
-            if(payloadBuf(1) == 4)
-                 disp('pkt type 4 sent to vehicle');
-            end
-            if(payloadBuf(1) == 1)
-                 disp('pkt type 1 sent to vehicle and rsu');
-            end
+%             if(payloadBuf(1) == 4)
+%                  disp('pkt type 4 sent to vehicle');
+%             end
+%             if(payloadBuf(1) == 1)
+%                  disp('pkt type 1 sent to vehicle and rsu');
+%             end
             nodeListInfo.nodeTxCount(nodeId+1, 1);
         end
         
@@ -231,7 +231,8 @@ classdef WSMPTraffic
             switch(payload(1)) % first byte in payload is pkt type
                 case WSMPTraffic.hazardWarning
                     %do blockchain here
-                    disp('Vehicle: send pkt 1 to rsu');
+                    
+%                     disp('Vehicle: send pkt 1 to rsu');
                     payloadBuf = payload.';
                     payloadBuf(1) = 1;
                     payloadBuf(4) = nodeId;
@@ -241,21 +242,13 @@ classdef WSMPTraffic
                     channel = CCH;                  
                     WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, nodeId, channel);
                     nodeListInfo.nodeHazardWarningTxCount(nodeId+1, 1);
-%                     WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, nodeId, channel);
-%                     nodeListInfo.nodeHazardWarningTxCount(nodeId+1, 1);
                     
                     nodeListInfo.nodeHazardWarningRxCount(nodeId+1, 1);
                     mobilityIntelligence.handleHazardWarning(nodeId, ...
                         payload, length-WSMPTraffic.headerSize);
-                case WSMPTraffic.positionBeacon
-                    % Do nothing
-                case WSMPTraffic.hazardRemovedPkt
-                    mobilityIntelligence.handleHazardRemovedPkt(nodeId, ...
-                        payload, length-WSMPTraffic.headerSize);
-                case WSMPTraffic.rsuGeneralPkt
-                    %do blockchain here
                     
-                    disp('Vehicle: receive pkt type 4 from rsu');
+                case WSMPTraffic.rsuGeneralPkt                                    
+%                     disp('Vehicle: receive pkt type 4 from rsu');                  
                     nodeId = payloadBuf(4);
                     payloadBuf(4) = 0;
                     payload = payloadBuf.';
@@ -274,26 +267,31 @@ classdef WSMPTraffic
             switch(payload(1)) % first byte in payload is pkt type
                 case WSMPTraffic.hazardWarning
                     
-                    disp('RSU: send pkt type 4 from rsu to vehicle');
+%                     disp('RSU: send pkt type 4 from rsu to vehicle');
 
                     %some blockchain stuff
+                        
+                    %validate packet
+                    validated = SmartContracts.hazardValidation(payload);
                     
+                    if(validated == 1)
+                        disp('continue with consensus');
+                        %continue with consensus
+                        %add to blockchain
+                    end
+                    
+                     
                     payloadBuf = payload.';
-                    payloadBuf(1) = 4;
-                    payloadBuf(4) = nodeId;
+                    payloadBuf(1) = rsuGeneralPkt;      %pkt type 4: to send rsuGeneral
+                    payloadBuf(4) = nodeId; %store the nodeId in the 4th payloadBuf
                     payloadS = size(payloadBuf);
-                    payloadSize = payloadS(2);
+                    payloadSize = payloadS(2); %get payloadSize
                     channel = 178;                    
                     WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, nodeId, channel);
                     nodeListInfo.nodeHazardWarningTxCount(nodeId+1, 1);
-                    WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, nodeId, channel);
-                    nodeListInfo.nodeHazardWarningTxCount(nodeId+1, 1);
+%                     WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, nodeId, channel);
+%                     nodeListInfo.nodeHazardWarningTxCount(nodeId+1, 1);
 
-                case WSMPTraffic.positionBeacon
-                    % Do nothing
-                case WSMPTraffic.hazardRemovedPkt
-                    mobilityIntelligence.handleHazardRemovedPkt(nodeId, ...
-                        payload, length-WSMPTraffic.headerSize);
                 case WSMPTraffic.rsuGeneralPkt
                     % Do something
             end

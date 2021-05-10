@@ -72,7 +72,14 @@ classdef hazard
             % start sending periodic hazard warning
             
             %WSMPTraffic.runWSMPApp(WSMPArgs);
-           Simulator.Schedule('WSMPTraffic.runWSMPApp', 1, WSMPArgs);
+            Simulator.Schedule('WSMPTraffic.runWSMPApp', 1, WSMPArgs);
+            
+            % Register Hazard to Smart Contract
+            [payloadBuf, payloadSize]= WSMPTraffic.constructHazardWarning(WSMPArgs.nodeId, WSMPArgs.rInfo, WSMPArgs.mm);
+            SmartContracts.register(payloadBuf);
+            
+            
+            
 %             disp('hazard sends warning packet');
             hazard.getSetHazardTimeSlot(hazardArgs.entryTime, ...
                 hazardArgs.entryTime + hazardArgs.repairTime);

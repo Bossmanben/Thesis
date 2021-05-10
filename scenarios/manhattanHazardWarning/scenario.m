@@ -59,7 +59,7 @@ clear functions;
 
 % Configure simulation run time (In seconds)
 % simTime = 70;
-simTime = 50;
+simTime = 6;
 
 % Manhattan-grid configuration
 hBlocks = 4 ; % Number of horizontal blocks
@@ -116,7 +116,7 @@ journeyList = {
 % chosen.
 %speedMatrix = [89 90 82 100 91 89 87 85 99];
 %speedMatrix = [95 90 98 100 91 94 87 85 99 86 90];
-speedMatrix = [19 20 22 21 91 21 20 22 100 16 12];
+speedMatrix = [19 20 22 21 91 21 20 22 100];
 
 % Hazard appears on this road.
 hazardLoc = {'+x' 2 1}; %Define hazrd location
@@ -255,18 +255,8 @@ rogueVehConfig.pktPeriodicity = positionBeaconPeriodicity;
 
 rVehC = scenarioSetup.installRogueVehicles(rogueVehConfig);
 
-%% Install second rogue vehicle for second hazard
-% rogueVehConfig2.numVehicles = numRogueVehicles;
-% rogueVehConfig2.wavePhy = wavePhy;
-% rogueVehConfig2.txGain = rogueTxGain;
-% rogueVehConfig2.rxGain = rogueRxGain;
-% rogueVehConfig2.rxNoiseFigure = rogueRxNoiseFigure;
-% rogueVehConfig2.waveMac = waveMac;
-% rogueVehConfig2.hazardLoc = hazardLoc2;
-% rogueVehConfig2.maxVehSpeed = maxRogueVehSpeed;
-% rogueVehConfig2.pktPeriodicity = positionBeaconPeriodicity;
-% 
-% rVehC2 = scenarioSetup.installRogueVehicles(rogueVehConfig2);
+%% Deploy smart contract
+SmartContracts.constructor();
 
 %% Configure hazard related parameters and schedule hazard creation
 hazardConfig.warningPeriodicity = hazardWarningPeriodicity; % Periodicity of warning packet in milliseconds.
