@@ -124,7 +124,7 @@ hazardLoc = {'+x' 2 1}; %Define hazrd location
 fakeLoc = {'+x' 3 1};
 
 hazardEntryT = 5000; % Hazard occurence timestamp in milliseconds.
-hazardWarningPeriodicity = 50; % In milliseconds
+hazardWarningPeriodicity = 300; % In milliseconds
 % hazardWarningPeriodicity = 4000; % In milliseconds
 fakehazardWarningPeriodicity = 150;
 
@@ -158,14 +158,16 @@ hazardRxNoiseFigure = 7;
 RSUTxGain = 1;
 RSURxGain = 1;
 RSURxNoiseFigure = 7;
-RSULocation = {'-y' 3 2};
+RSULocation = {'-y' 1 3};
+RSULocation2 = {'-y' 2 3};
+RSULocation3 = {'-y' 3 2};
+RSULocation4 = {'+x' 4 3};
 RSUWarningPeriodicity = 150;
 
 % Rogue Vehicle physical layer properties.
 rogueTxGain = 6;
 rogueRxGain = 1;
 rogueRxNoiseFigure = 7;
-
 
 %Channel Properties
 pathLossExponent = 3;
@@ -302,37 +304,6 @@ hazardConfig2.fakeLoc = fakeLoc2;
 
 scenarioSetup.configureHazard(hazardConfig2);
 
-% %% Configure third hazard 
-% hazardConfig3.warningPeriodicity = hazardWarningPeriodicity;
-% hazardConfig3.offsetFromStart = 0.8*streetLen;
-% hazardConfig3.entryTime = hazardEntryT;
-% hazardRepairT3 = simTime*1000 - hazardEntryT;
-% hazardConfig3.repairTime = hazardRepairT3;
-% hazardConfig3.location = hazardLoc3;
-% hazardConfig3.phy = wavePhy;
-% hazardConfig3.txGain = hazardTxGain;
-% hazardConfig3.rxGain = hazardRxGain;
-% hazardConfig3.rxNoiseFigure = hazardRxNoiseFigure;
-% hazardConfig3.mac = waveMac;
-% hazardConfig3.fakeLoc = fakeLoc3;
-% 
-% scenarioSetup.configureHazard(hazardConfig3);
-% 
-% %% Configure fourth hazard 
-% hazardConfig4.warningPeriodicity = hazardWarningPeriodicity;
-% hazardConfig4.offsetFromStart = 0.8*streetLen;
-% hazardConfig4.entryTime = hazardEntryT;
-% hazardRepairT4 = simTime*1000 - hazardEntryT;
-% hazardConfig4.repairTime = hazardRepairT4;
-% hazardConfig4.location = hazardLoc4;
-% hazardConfig4.phy = wavePhy;
-% hazardConfig4.txGain = hazardTxGain;
-% hazardConfig4.rxGain = hazardRxGain;
-% hazardConfig4.rxNoiseFigure = hazardRxNoiseFigure;
-% hazardConfig4.mac = waveMac;
-% 
-% scenarioSetup.configureHazard(hazardConfig4);
-
 %% Create and place RSU at a certain position and install warning app
 RSUConfig.waveMac = waveMac;
 RSUConfig.wavePhy = wavePhy;
@@ -346,17 +317,58 @@ RSUConfig.offsetFromStart = 0.8*streetLen;      %experiment w/ this
 
 rsuContainer = scenarioSetup.installRSU(RSUConfig);
 
+%% Create and place second RSU at a certain position and install warning app
+RSUConfig.waveMac = waveMac;
+RSUConfig.wavePhy = wavePhy;
+RSUConfig.txGain = RSUTxGain;
+RSUConfig.rxGain = RSURxGain;
+RSUConfig.rxNoiseFigure = RSURxNoiseFigure;
+RSUConfig.rsulocation = RSULocation2;           %%replace platoonLane w/ loc
+RSUConfig.topology = topology;
+RSUConfig.WarningPeriodicity = RSUWarningPeriodicity;
+RSUConfig.offsetFromStart = 0.8*streetLen;      %experiment w/ this
+
+rsuContainer2 = scenarioSetup.installRSU(RSUConfig);
+
+%% Create and place third RSU at a certain position and install warning app
+RSUConfig.waveMac = waveMac;
+RSUConfig.wavePhy = wavePhy;
+RSUConfig.txGain = RSUTxGain;
+RSUConfig.rxGain = RSURxGain;
+RSUConfig.rxNoiseFigure = RSURxNoiseFigure;
+RSUConfig.rsulocation = RSULocation3;           %%replace platoonLane w/ loc
+RSUConfig.topology = topology;
+RSUConfig.WarningPeriodicity = RSUWarningPeriodicity;
+RSUConfig.offsetFromStart = 0.8*streetLen;      %experiment w/ this
+
+rsuContainer3 = scenarioSetup.installRSU(RSUConfig);
+
+%% Create and place fourth RSU at a certain position and install warning app
+RSUConfig.waveMac = waveMac;
+RSUConfig.wavePhy = wavePhy;
+RSUConfig.txGain = RSUTxGain;
+RSUConfig.rxGain = RSURxGain;
+RSUConfig.rxNoiseFigure = RSURxNoiseFigure;
+RSUConfig.rsulocation = RSULocation4;           %%replace platoonLane w/ loc
+RSUConfig.topology = topology;
+RSUConfig.WarningPeriodicity = RSUWarningPeriodicity;
+RSUConfig.offsetFromStart = 0.8*streetLen;      %experiment w/ this
+
+rsuContainer4 = scenarioSetup.installRSU(RSUConfig);
+
 %% Set up Visualization Logging
 config.hBlocks = hBlocks;
 config.vBlocks = vBlocks;
 config.streetWidth = streetWidth;
 config.streetLen = streetLen;
 config.rVehC = rVehC;
-% config.rVehC2 = rVehC2;
 config.numVehicles = numVehicles;
 config.numRogueVehicles = numRogueVehicles;
 config.logPeriodicity = 500;
 config.rsuC = rsuContainer;
+config.rsuC2 = rsuContainer2;
+config.rsuC3 = rsuContainer3;
+config.rsuC4 = rsuContainer4;
 scenarioSetup.setUpVisualizationAndTraces(config);
 
 %% Run simulation
