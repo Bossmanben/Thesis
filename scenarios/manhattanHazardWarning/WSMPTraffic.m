@@ -213,10 +213,10 @@ classdef WSMPTraffic
             SocketInterface.Send(payloadBuf, payloadSize, nodeId, channel, ...
                 WSMP_PROT_NUMBER, bssWildcard);
             if(payloadBuf(1) == 4)
-                 disp('pkt type 4 sent to vehicle');
+                 %disp('pkt type 4 sent to vehicle');
             end
             if(payloadBuf(1) == 1)
-                 disp('pkt type 1 sent to vehicle and rsu');
+                 %disp('pkt type 1 sent to vehicle and rsu');
             end
             nodeListInfo.nodeTxCount(nodeId+1, 1);
         end
@@ -231,7 +231,7 @@ classdef WSMPTraffic
             switch(payload(1)) % first byte in payload is pkt type
                 case WSMPTraffic.hazardWarning
                     %do blockchain here
-                    disp('Vehicle: send pkt 1 to rsu');
+                    %disp('Vehicle: send pkt 1 to rsu');
                     payloadBuf = payload.';
                     payloadBuf(1) = 1;
                     payloadBuf(4) = nodeId;
@@ -255,7 +255,7 @@ classdef WSMPTraffic
                 case WSMPTraffic.rsuGeneralPkt
                     %do blockchain here
                     
-                    disp('Vehicle: receive pkt type 4 from rsu');
+                    %disp('Vehicle: receive pkt type 4 from rsu');
                     nodeId = payloadBuf(4);
                     payloadBuf(4) = 0;
                     payload = payloadBuf.';
@@ -274,10 +274,60 @@ classdef WSMPTraffic
             switch(payload(1)) % first byte in payload is pkt type
                 case WSMPTraffic.hazardWarning
                     
-                    disp('RSU: send pkt type 4 from rsu to vehicle');
-
-                    %some blockchain stuff
                     
+                    %Base Blockchain Functionalities
+                    
+                    %Instantiate Blockchain
+                    persistent Blockchain_Flag
+                    global Sample
+                    
+                    if isempty(Blockchain_Flag)
+                        Blockchain_Flag = 0;
+                        Sample = Blockchain.BlockchainNew();
+                        disp('Initializing Blockchain');
+                        Blockchain.print(Sample);
+                    end
+                    Blockchain_Flag = Blockchain_Flag + 1;
+                    
+                    %disp('RSU: send pkt type 4 from rsu to vehicle');
+
+%                     %Validate chain
+%                     is_bc_valid = Blockchain.validate_chain(Sample);
+%                     if(is_bc_valid == false)
+%                         disp('Chain corrupted');
+%                         %Replace Chain
+%                         NewSample = Blockchain.BlockchainNew();
+%                         new_chain_broadcast = Blockchain.replace_blockchain(Sample, NewSample);
+%                         %Broadcast creation of new chain
+%                         %payload = new_chain_broadcast
+%                     end
+%                   
+                    persistent i
+                    if isempty(i)
+                        i = 0;
+                    end
+                    nonce = uint32(i);
+                    transaction = [payloadBuf(4), payloadBuf(5), payloadBuf(6)];
+                    CurBlock = Blockchain.add_block(Sample, transaction, nonce);
+                    %disp('Block created');
+                    %disp(CurBlock);          
+                    i = i + 1;
+
+                    filey = fopen('blocks.txt','a+');
+                    fprintf (filey,'index: %d\ntimestamp: %s\ndata: %d %d %d\nnonce: %d\nhash: %s\nprevious_hash: %s\n\n', CurBlock.index, CurBlock.timestamp, CurBlock.data, CurBlock.nonce, CurBlock.hash, CurBlock.previous_hash); 
+                    fclose(filey);
+                
+                    %Blockchain.print(Sample);
+%                     
+%                     %Consensus 
+%                     
+%                     %Add block to Blockchain, validates before adding
+%                     is_addblock_success = Blockchain.add_mined_block(Sample, CurBlock);
+%                     if(is_addblock_success == false)
+%                         disp('Block not added to chain');
+%                     end
+%                     Blockchain.print(Sample);
+%                  
                     payloadBuf = payload.';
                     payloadBuf(1) = 4;
                     payloadBuf(4) = nodeId;
