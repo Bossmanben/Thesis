@@ -61,7 +61,8 @@ clear functions;
 %% Scenario Configuration Section
 
 % Configure simulation run time (In seconds)
-simTime = 40;
+% simTime = 70;
+simTime = 6;
 
 % Manhattan-grid configuration
 hBlocks = 4 ; % Number of horizontal blocks
@@ -95,19 +96,19 @@ journeyList = {
     % Source Road      % Destination Road
     { {'+x' 4 2}        {'+y' 2 4 } } %  Vehicle 1 journey
     { {'-y' 1 3}        {'+y' 4 3 } } %  Vehicle 2 journey
-    { {'+y' 1 3}        {'-y' 2 1 } } %      .
-    { {'+y' 2 1}        {'-y' 1 4 } } %      .
-    { {'+x' 3 1}        {'-y' 3 4 } } %      .
-    { {'-x' 1 2}        {'-x' 2 3 } } %      .
-    { {'+x' 4 1}        {'-x' 1 4 } } %      .
-    { {'-y' 2 1}        {'+x' 2 2 } } %      .
-    { {'+y' 1 1}        {'+x' 2 2 } } %      .
-    { {'+x' 4 2}        {'+x' 4 1 } } %      .
-    { {'-y' 3 2}        {'-y' 3 1 } } %      .
-    { {'+y' 2 3}        {'+x' 1 4 } } %      .
-    { {'+y' 4 3}        {'-y' 1 3 } } %      .
-    { {'-x' 2 3}        {'+x' 3 1 } } %      .
-    { {'+x' 3 2}        {'+y' 1 3 } } %      .
+    { {'+y' 1 3}        {'-y' 2 1 } } %      .3
+    { {'+y' 2 1}        {'-y' 1 4 } } %      .4
+    { {'+x' 3 1}        {'-y' 3 4 } } %      .5
+    { {'-x' 1 2}        {'-x' 2 3 } } %      .6
+    { {'+x' 4 1}        {'-x' 1 4 } } %      .7
+    { {'-y' 2 1}        {'+x' 2 2 } } %      .8
+    { {'+y' 1 1}        {'+x' 2 2 } } %      .9
+%     { {'+x' 4 2}        {'+x' 4 1 } } %      .10
+%     { {'-y' 3 2}        {'-y' 3 1 } } %      .11   
+%     { {'+y' 2 3}        {'+x' 1 4 } } %      .12
+%     { {'+y' 4 3}        {'-y' 1 3 } } %      .13
+%     { {'-x' 2 3}        {'+x' 3 1 } } %      .14
+%     { {'+x' 3 2}        {'+y' 1 3 } } %      .15
     };
 
 
@@ -116,10 +117,29 @@ journeyList = {
 % to the value at index equal to its ID in this matrix. If this matrix does
 % not define speed for all, a random value between 15 to 20 is
 % chosen.
-speedMatrix = [19 20 22 21 91 21 20 22 100 16 12 90 82 67 50];
+%speedMatrix = [89 90 82 100 91 89 87 85 99];
+%speedMatrix = [95 90 98 100 91 94 87 85 99 86 90];
+speedMatrix = [19 20 22 21 91 21 20 22 100];
 
+% Hazard appears on this road.
 hazardLoc = {'+x' 2 1}; %Define hazrd location
+% fakeLoc = {'-y' 3 2};
+fakeLoc = {'+x' 3 1};
+
+hazardEntryT = 5000; % Hazard occurence timestamp in milliseconds.
+hazardWarningPeriodicity = 300; % In milliseconds
+% hazardWarningPeriodicity = 4000; % In milliseconds
+fakehazardWarningPeriodicity = 150;
+
 hazardLoc2 = {'-x' 3 4};
+% fakeLoc2 = {'+x' 2 1};
+fakeLoc2 = {'-x' 2 4};
+hazardEntryT2 = 6000;
+
+hazardLoc3 = {'+x' 2 1};
+fakeLoc3 = {'+y' 2 2};
+
+hazardLoc4 = {'-y' 3 2};
 
 % Set number of Rogue vehicles
 numRogueVehicles = 40;
@@ -137,11 +157,20 @@ hazardTxGain = 1;
 hazardRxGain = 1;
 hazardRxNoiseFigure = 7;
 
+%Phy configuration of Road-Side-unit
+RSUTxGain = 1;
+RSURxGain = 1;
+RSURxNoiseFigure = 7;
+RSULocation = {'-y' 1 3};
+RSULocation2 = {'-y' 2 3};
+RSULocation3 = {'-y' 3 2};
+RSULocation4 = {'+x' 4 3};
+RSUWarningPeriodicity = 150;
+
 % Rogue Vehicle physical layer properties.
 rogueTxGain = 6;
 rogueRxGain = 1;
 rogueRxNoiseFigure = 7;
-
 
 %Channel Properties
 pathLossExponent = 3;
@@ -159,7 +188,7 @@ createManhattanGrid(topology, hBlocks, vBlocks, streetWidth, streetLen);
 nodeListInfo.getSetTopology(topology);
 
 %% Find routes based on source and destination passing through hazard
-routeVector = scenarioSetup.createRoutes(journeyList, hazardLoc,hazardLoc2);
+routeVector = scenarioSetup.createRoutes(journeyList, hazardLoc, hazardLoc2);
 
 %% Initialize the NS3-Mex Interface to maintain state of the simulation.
 initNs3Interface();
@@ -189,8 +218,8 @@ waveMac = scenarioSetup.createDefaultWaveMac();
 netDevices = scenarioSetup.installWaveStack(wavePhy, waveMac, regVehContainer);
 
 % Register RX callback on vehicles.
-SocketInterface.RegisterRXCallback(netDevices, @WaveRXCallback);
-
+% SocketInterface.RegisterRXCallback(netDevices, @WaveRXCallback);
+SocketInterface.RegisternewRXCallback(netDevices, @revWaveRXCallback);
 
 %% Attach routes, mobility, packet application to regular vehicles.
 % Install mobility on vehicles according to their respective routes. 'WSMP
@@ -228,6 +257,8 @@ rogueVehConfig.pktPeriodicity = positionBeaconPeriodicity;
 
 rVehC = scenarioSetup.installRogueVehicles(rogueVehConfig);
 
+%% Deploy smart contract
+SmartContracts.constructor();
 
 %% Configure hazard related parameters and schedule hazard creation
 
@@ -236,6 +267,7 @@ hazardEntryT = 5000; % Hazard occurence timestamp in milliseconds.
 hazardWarningPeriodicity = 150; % In milliseconds
 
 hazardConfig.warningPeriodicity = hazardWarningPeriodicity; % Periodicity of warning packet in milliseconds.
+hazardConfig.fakewarningPeriodicity = fakehazardWarningPeriodicity;
 hazardConfig.offsetFromStart = 0.8*streetLen;  % Hazard location offset from start of road
 hazardConfig.entryTime = hazardEntryT; % In milliseconds.
 hazardRepairT = simTime*1000 - hazardEntryT; %Time required to repair the hazard in milliseconds.
@@ -248,27 +280,78 @@ hazardConfig.txGain = hazardTxGain;
 hazardConfig.rxGain = hazardRxGain;
 hazardConfig.rxNoiseFigure = hazardRxNoiseFigure;
 hazardConfig.mac = waveMac;
+hazardConfig.fakeLoc = fakeLoc;
 
 scenarioSetup.configureHazard(hazardConfig);
 
-
-%% Second Hazard Integration
-
-hazardEntryT2 = 6000;
-
-hazardConfig2.warningPeriodicity = hazardWarningPeriodicity; % Periodicity of warning packet in milliseconds.
-hazardConfig2.offsetFromStart = 0.8*streetLen;  % Hazard location offset from start of road
-hazardConfig2.entryTime = hazardEntryT2; % In milliseconds.
-hazardRepairT = simTime*1000 - hazardEntryT2; %Time required to repair the hazard in milliseconds.
-hazardConfig2.repairTime = hazardRepairT; % In milliseconds
-hazardConfig2.location=hazardLoc2;
+%% Configure second hazard 
+hazardConfig2.warningPeriodicity = hazardWarningPeriodicity;
+hazardConfig2.fakewarningPeriodicity = fakehazardWarningPeriodicity;
+hazardConfig2.offsetFromStart = 0.8*streetLen;
+hazardConfig2.entryTime = hazardEntryT;
+hazardRepairT2 = simTime*1000 - hazardEntryT;
+hazardConfig2.repairTime = hazardRepairT2;
+hazardConfig2.location = hazardLoc2;
 hazardConfig2.phy = wavePhy;
 hazardConfig2.txGain = hazardTxGain;
 hazardConfig2.rxGain = hazardRxGain;
 hazardConfig2.rxNoiseFigure = hazardRxNoiseFigure;
 hazardConfig2.mac = waveMac;
+hazardConfig2.fakeLoc = fakeLoc2;
 
 scenarioSetup.configureHazard(hazardConfig2);
+
+%% Create and place RSU at a certain position and install warning app
+RSUConfig.waveMac = waveMac;
+RSUConfig.wavePhy = wavePhy;
+RSUConfig.txGain = RSUTxGain;
+RSUConfig.rxGain = RSURxGain;
+RSUConfig.rxNoiseFigure = RSURxNoiseFigure;
+RSUConfig.rsulocation = RSULocation;           %%replace platoonLane w/ loc
+RSUConfig.topology = topology;
+RSUConfig.WarningPeriodicity = RSUWarningPeriodicity;
+RSUConfig.offsetFromStart = 0.8*streetLen;      %experiment w/ this
+
+rsuContainer = scenarioSetup.installRSU(RSUConfig);
+
+%% Create and place second RSU at a certain position and install warning app
+RSUConfig.waveMac = waveMac;
+RSUConfig.wavePhy = wavePhy;
+RSUConfig.txGain = RSUTxGain;
+RSUConfig.rxGain = RSURxGain;
+RSUConfig.rxNoiseFigure = RSURxNoiseFigure;
+RSUConfig.rsulocation = RSULocation2;           %%replace platoonLane w/ loc
+RSUConfig.topology = topology;
+RSUConfig.WarningPeriodicity = RSUWarningPeriodicity;
+RSUConfig.offsetFromStart = 0.8*streetLen;      %experiment w/ this
+
+rsuContainer2 = scenarioSetup.installRSU(RSUConfig);
+
+%% Create and place third RSU at a certain position and install warning app
+RSUConfig.waveMac = waveMac;
+RSUConfig.wavePhy = wavePhy;
+RSUConfig.txGain = RSUTxGain;
+RSUConfig.rxGain = RSURxGain;
+RSUConfig.rxNoiseFigure = RSURxNoiseFigure;
+RSUConfig.rsulocation = RSULocation3;           %%replace platoonLane w/ loc
+RSUConfig.topology = topology;
+RSUConfig.WarningPeriodicity = RSUWarningPeriodicity;
+RSUConfig.offsetFromStart = 0.8*streetLen;      %experiment w/ this
+
+rsuContainer3 = scenarioSetup.installRSU(RSUConfig);
+
+%% Create and place fourth RSU at a certain position and install warning app
+RSUConfig.waveMac = waveMac;
+RSUConfig.wavePhy = wavePhy;
+RSUConfig.txGain = RSUTxGain;
+RSUConfig.rxGain = RSURxGain;
+RSUConfig.rxNoiseFigure = RSURxNoiseFigure;
+RSUConfig.rsulocation = RSULocation4;           %%replace platoonLane w/ loc
+RSUConfig.topology = topology;
+RSUConfig.WarningPeriodicity = RSUWarningPeriodicity;
+RSUConfig.offsetFromStart = 0.8*streetLen;      %experiment w/ this
+
+rsuContainer4 = scenarioSetup.installRSU(RSUConfig);
 
 %% Fake Hazard Integration
 hazardConfigs=[hazardConfig;hazardConfig;hazardConfig;hazardConfig;hazardConfig;
@@ -284,12 +367,12 @@ locs = [
         {'-y' 3 3}
         {'+y' 4 3}
         {'+y' 4 2}
-        ];
     
+        ];
 for i = 1:length(hazardConfigs)
     hazardConfigs(i).location = locs(i,1:3);
-    scenarioSetup.configureHazard(hazardConfigs(i));
     %disp(hazardConfigs(i));
+    scenarioSetup.configureHazard(hazardConfigs(i));
 end
 
 %% Set up Visualization Logging
@@ -301,7 +384,28 @@ config.rVehC = rVehC;
 config.numVehicles = numVehicles;
 config.numRogueVehicles = numRogueVehicles;
 config.logPeriodicity = 500;
+config.rsuC = rsuContainer;
+config.rsuC2 = rsuContainer2;
+config.rsuC3 = rsuContainer3;
+config.rsuC4 = rsuContainer4;
 scenarioSetup.setUpVisualizationAndTraces(config);
+
+%% Blockchain
+% Sample = Blockchain.BlockchainNew();
+% disp('Initializing Blockchain');
+% Blockchain.print(Sample);
+%  
+% nonce = uint32(1);
+% payload = 2;
+% CurBlock = Blockchain.add_block(Sample, payload, nonce);
+% disp('Block created');
+% disp(CurBlock);          
+% 
+% is_addblock_success = Blockchain.add_mined_block(Sample, CurBlock);
+% if(is_addblock_success == false)
+%     disp('Block not added to chain');
+% end
+% Blockchain.print(Sample);
 
 %% Run simulation
 Simulator.Stop(simTime);

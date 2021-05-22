@@ -334,7 +334,7 @@ classdef vehicularRoute < handle
                 hopRoadId1 = hazardRoadId1;
                 hopRoadId2 = hazardRoadId2;
                 
-                % Find route from source road to end of hop-road
+                % Find route from source road to end of hop-road1
                 subRoute1 = vehicularRoute.findRoute(sourceRoadId, hopRoadId1);
                 
                 % Find route from hop-road1 to hop-road2

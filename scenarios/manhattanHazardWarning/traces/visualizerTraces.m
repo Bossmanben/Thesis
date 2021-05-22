@@ -22,6 +22,7 @@ classdef visualizerTraces
         SUCCESS_FAILURE_COUNT = 8
         HAZARD_COLLISION_EVENT = 9
         JOURNEY_COMPLETE_EVENT = 10
+        RSU_INSTALLATION_EVENT = 11
     end
     
     methods(Static)
@@ -50,6 +51,14 @@ classdef visualizerTraces
                 %                 stats.getSetStats(args.numVehicles+1,'MacRxDrop',0);
                 %                 stats.getSetStats(args.numVehicles+1,'RxError',0);
                 %
+                nodeListInfo.nodeTxCount(args.rsuId,0);
+                nodeListInfo.nodeRxCount(args.rsuId,0);
+                nodeListInfo.nodeTxCount(args.rsuId2,0);
+                nodeListInfo.nodeRxCount(args.rsuId2,0);
+                nodeListInfo.nodeTxCount(args.rsuId3,0);
+                nodeListInfo.nodeRxCount(args.rsuId3,0);
+                nodeListInfo.nodeTxCount(args.rsuId4,0);
+                nodeListInfo.nodeRxCount(args.rsuId4,0);
                 nodeListInfo.nodeTxCount(args.numVehicles+args.numRogueVehicles+1, 0);
                 nodeListInfo.nodeRxCount(args.numVehicles+args.numRogueVehicles+1, 0);
                 nodeListInfo.nodeTxCount(args.numVehicles+args.numRogueVehicles+2, 0);
@@ -75,6 +84,30 @@ classdef visualizerTraces
                 %nodeListInfo.nodeTxCount(args.numVehicles+args.numRogueVehicles+12, 0);
                 %nodeListInfo.nodeRxCount(args.numVehicles+args.numRogueVehicles+12, 0);
                 
+                nodeListInfo.nodeHazardWarningRxCount(args.rsuId, 0);
+                nodeListInfo.nodeHazardWarningTxCount(args.rsuId, 0);
+                nodeListInfo.nodeHazardWarningRxCount(args.rsuId2, 0);
+                nodeListInfo.nodeHazardWarningTxCount(args.rsuId2, 0);
+                nodeListInfo.nodeHazardWarningRxCount(args.rsuId3, 0);
+                nodeListInfo.nodeHazardWarningTxCount(args.rsuId3, 0);
+                nodeListInfo.nodeHazardWarningRxCount(args.rsuId4, 0);
+                nodeListInfo.nodeHazardWarningTxCount(args.rsuId4, 0);
+%                 disp('args.resuId');
+%                 disp(args.rsuId);
+%                 disp('arg.numVeh+args.numRogue+1');
+%                 disp(args.numVehicles+args.numRogueVehicles+1);
+%                 disp('arg.numVeh+args.numRogue+2');
+%                 disp(args.numVehicles+args.numRogueVehicles+2);
+                nodeListInfo.nodeTxCount(args.numVehicles+args.numRogueVehicles+2, 0);
+                nodeListInfo.nodeRxCount(args.numVehicles+args.numRogueVehicles+2, 0);
+                nodeListInfo.nodeTxCount(args.numVehicles+args.numRogueVehicles+3, 0);
+                nodeListInfo.nodeRxCount(args.numVehicles+args.numRogueVehicles+3, 0);
+                nodeListInfo.nodeTxCount(args.numVehicles+args.numRogueVehicles+4, 0);
+                nodeListInfo.nodeRxCount(args.numVehicles+args.numRogueVehicles+4, 0);
+                nodeListInfo.nodeTxCount(args.numVehicles+args.numRogueVehicles+5, 0);
+                nodeListInfo.nodeRxCount(args.numVehicles+args.numRogueVehicles+5, 0);
+                nodeListInfo.nodeTxCount(args.numVehicles+args.numRogueVehicles+6, 0);
+                nodeListInfo.nodeRxCount(args.numVehicles+args.numRogueVehicles+6, 0);
                 nodeListInfo.nodeHazardWarningRxCount(args.numVehicles + ...
                                                args.numRogueVehicles+1, 0);
                 nodeListInfo.nodeHazardWarningTxCount(args.numVehicles + ...
@@ -124,6 +157,26 @@ classdef visualizerTraces
                 %nodeListInfo.nodeHazardWarningTxCount(args.numVehicles + ...
                                                %args.numRogueVehicles+12, 0);                          
                                            
+                nodeListInfo.nodeHazardWarningRxCount(args.numVehicles + ...
+                nodeListInfo.nodeHazardWarningTxCount(args.numVehicles + ...
+                                               args.numRogueVehicles+2, 0);
+                nodeListInfo.nodeHazardWarningRxCount(args.numVehicles + ...
+                                               args.numRogueVehicles+2, 0);
+                                               args.numRogueVehicles+3, 0);
+                                               args.numRogueVehicles+3, 0);
+                nodeListInfo.nodeHazardWarningTxCount(args.numVehicles + ...
+                nodeListInfo.nodeHazardWarningRxCount(args.numVehicles + ...
+                                               args.numRogueVehicles+4, 0);
+                nodeListInfo.nodeHazardWarningTxCount(args.numVehicles + ...
+                                               args.numRogueVehicles+4, 0);
+                nodeListInfo.nodeHazardWarningRxCount(args.numVehicles + ...
+                                               args.numRogueVehicles+5, 0);
+                nodeListInfo.nodeHazardWarningTxCount(args.numVehicles + ...
+                                               args.numRogueVehicles+5, 0);
+                nodeListInfo.nodeHazardWarningRxCount(args.numVehicles + ...
+                nodeListInfo.nodeHazardWarningTxCount(args.numVehicles + ...
+                                               args.numRogueVehicles+6, 0);
+                                               args.numRogueVehicles+6, 0);
                 stats.getSetStats(args.numVehicles+args.numRogueVehicles + ...
                                                1,'MacRxDrop',0);
                 stats.getSetStats(args.numVehicles+args.numRogueVehicles + ...
@@ -165,12 +218,17 @@ classdef visualizerTraces
                     -1, -1, -1);
             end
             
+            %do we need to add to this for RSU?
+            txCount =  nodeListInfo.nodeTxCount(args.numVehicles+args.numRogueVehicles+6);
+            rxCount =  nodeListInfo.nodeRxCount(args.numVehicles+args.numRogueVehicles+6);
             
             txCount =  nodeListInfo.nodeTxCount(args.numVehicles+args.numRogueVehicles+7);
             rxCount =  nodeListInfo.nodeRxCount(args.numVehicles+args.numRogueVehicles+7);
             hazardWarningTxCount = nodeListInfo.nodeHazardWarningTxCount( ...
+                                 args.numVehicles+args.numRogueVehicles+6);
                                  args.numVehicles+args.numRogueVehicles+7);
             hazardWarningRxCount = nodeListInfo.nodeHazardWarningRxCount(...
+                                 args.numVehicles+args.numRogueVehicles+6);
                                  args.numVehicles+args.numRogueVehicles+7);
             phyRxErrorCount = stats.getSetStats(args.numVehicles + ...
                                  args.numRogueVehicles+1, 'RxError');
@@ -206,8 +264,9 @@ classdef visualizerTraces
         end
         
         % Log Initial position of a all vehicles
-        function logVehicles(numVehicles , numRogueVehicles, firstRogueVehId)
-            
+        function logVehicles(numVehicles , numRogueVehicles, firstRogueVehId, rsuId, rsuId2, rsuId3, rsuId4)
+%         function logVehicles(numVehicles , numRogueVehicles, firstRogueVehId)
+%         function logVehicles(numVehicles , numRogueVehicles, firstRogueVehId, secondRogueVehId)    
             % Logging number of vehicles
             file = fopen('scenario_info.txt','a+');
             fprintf(file,'%f %f',numVehicles, numRogueVehicles);
@@ -242,11 +301,54 @@ classdef visualizerTraces
                 fclose(file);
             end
             
+            %Use RSU ID for something
+            rsu = NodeList.GetNode(rsuId);
+            mmObj = rsu.GetObject('ConstantPositionMobilityModel');         %%changed
+            currentPosition = mmObj.GetPosition();
+            file = fopen('log_file.txt', 'a+');
+            fprintf (file, '%f %d %d %f %f %f %d %d %d\n', timeS, ...
+                visualizerTraces.RSU_INSTALLATION_EVENT, rsuId, ...
+                currentPosition(1), currentPosition(2), currentPosition(3), ...
+                -1, -1, -1);
+            fclose(file);
             
+            %Use RSU ID2 for something
+            rsu2 = NodeList.GetNode(rsuId2);
+            mmObj2 = rsu2.GetObject('ConstantPositionMobilityModel');         %%changed
+            currentPosition2 = mmObj2.GetPosition();
+            file = fopen('log_file.txt', 'a+');
+            fprintf (file, '%f %d %d %f %f %f %d %d %d\n', timeS, ...
+                visualizerTraces.RSU_INSTALLATION_EVENT, rsuId2, ...
+                currentPosition2(1), currentPosition2(2), currentPosition2(3), ...
+                -1, -1, -1);
+            fclose(file);
+            
+            %Use RSU ID3 for something
+            rsu3 = NodeList.GetNode(rsuId3);
+            mmObj3 = rsu3.GetObject('ConstantPositionMobilityModel');         %%changed
+            currentPosition3 = mmObj3.GetPosition();
+            file = fopen('log_file.txt', 'a+');
+            fprintf (file, '%f %d %d %f %f %f %d %d %d\n', timeS, ...
+                visualizerTraces.RSU_INSTALLATION_EVENT, rsuId3, ...
+                currentPosition3(1), currentPosition3(2), currentPosition3(3), ...
+                -1, -1, -1);
+            fclose(file);
+            
+            %Use RSU ID4 for something
+            rsu4 = NodeList.GetNode(rsuId4);
+            mmObj4 = rsu4.GetObject('ConstantPositionMobilityModel');         %%changed
+            currentPosition4 = mmObj4.GetPosition();
+            file = fopen('log_file.txt', 'a+');
+            fprintf (file, '%f %d %d %f %f %f %d %d %d\n', timeS, ...
+                visualizerTraces.RSU_INSTALLATION_EVENT, rsuId4, ...
+                currentPosition4(1), currentPosition4(2), currentPosition4(3), ...
+                -1, -1, -1);
+            fclose(file);
         end
         
         % Log hazard position
         function logHazard(hazardId)
+            %disp('hi');
             timeS = Simulator.Now();
             node = NodeList.GetNode(hazardId);
             mmObj = node.GetObject('ConstantVelocityMobilityModel');
