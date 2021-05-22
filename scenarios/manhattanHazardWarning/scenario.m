@@ -361,6 +361,23 @@ config.rsuC3 = rsuContainer3;
 config.rsuC4 = rsuContainer4;
 scenarioSetup.setUpVisualizationAndTraces(config);
 
+%% Blockchain
+% Sample = Blockchain.BlockchainNew();
+% disp('Initializing Blockchain');
+% Blockchain.print(Sample);
+%  
+% nonce = uint32(1);
+% payload = 2;
+% CurBlock = Blockchain.add_block(Sample, payload, nonce);
+% disp('Block created');
+% disp(CurBlock);          
+% 
+% is_addblock_success = Blockchain.add_mined_block(Sample, CurBlock);
+% if(is_addblock_success == false)
+%     disp('Block not added to chain');
+% end
+% Blockchain.print(Sample);
+
 %% Run simulation
 Simulator.Stop(simTime);
 disp('Simulation Started ................');
