@@ -373,8 +373,17 @@ DoubleValue(transmissionRange));
             rsu = config.rsuC.Get(0);
             rsuId = rsu.GetId();
             
+            rsu2 = config.rsuC2.Get(0);
+            rsuId2 = rsu2.GetId();
+            
+            rsu3 = config.rsuC3.Get(0);
+            rsuId3 = rsu3.GetId();
+            
+            rsu4 = config.rsuC4.Get(0);
+            rsuId4 = rsu4.GetId();
+            
             visualizerTraces.logVehicles(config.numVehicles, config.numRogueVehicles, ...
-                firstRogueVehId, rsuId);       
+                firstRogueVehId, rsuId, rsuId2, rsuId3, rsuId4);       
 %             visualizerTraces.logVehicles(config.numVehicles, config.numRogueVehicles, ...
 %                 firstRogueVehId); 
             % Position of vehicles is logged in log files with this  periodicity (in
@@ -388,6 +397,9 @@ DoubleValue(transmissionRange));
             traceArgs.firstRogueVehId = firstRogueVehId;
             %traceArgs.hazardId = hazardId;
             traceArgs.rsuId = rsuId;  %Id of RSU
+            traceArgs.rsuId2 = rsuId2;
+            traceArgs.rsuId3 = rsuId3;
+            traceArgs.rsuId4 = rsuId4;
             
             
             % Log mobility of vehicles
