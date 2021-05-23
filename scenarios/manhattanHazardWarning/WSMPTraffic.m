@@ -265,9 +265,8 @@ classdef WSMPTraffic
             switch(payload(1)) % first byte in payload is pkt type
                 case WSMPTraffic.hazardWarning
                     
-%                     disp('RSU: send pkt type 4 from rsu to vehicle');
                     
-                    %Base Blockchain Functionalities
+                % Base Blockchain Functionalities
                     
                     %Instantiate Blockchain
                     persistent Blockchain_Flag
@@ -280,21 +279,37 @@ classdef WSMPTraffic
                         Blockchain.print(Sample);
                     end
                     Blockchain_Flag = Blockchain_Flag + 1;
-                    
-                    %disp('RSU: send pkt type 4 from rsu to vehicle');
-
-                    %some blockchain stuff
-                        
+                                            
                     %validate packet
                     validated = SmartContracts.hazardValidation(payload);
-                    
+                                
                     if(validated == 1)
                         disp('continue with consensus');
-                        %continue with consensus
-                        %add to blockchain
+                        
+                        %Create Data Blocks
+                        persistent i
+                        if isempty(i)
+                            i = 0;
+                        end
+                        nonce = uint32(i);
+                        transaction = [payloadBuf(4), payloadBuf(5), payloadBuf(6)];        
+                        CurBlock = Blockchain.add_block(Sample, transaction, nonce);
+                        i = i + 1;
+                        %Block tracker
+                        filey = fopen('blocks.txt','a+');
+                        fclose(filey);
+                        fprintf (filey,'index: %d\ntimestamp: %s\ndata: %d %d %d\nnonce: %d\nhash: %s\nprevious_hash: %s\n\n', CurBlock.index, CurBlock.timestamp, CurBlock.data, CurBlock.nonce, CurBlock.hash, CurBlock.previous_hash); 
+
+                        %Consensus shit
+
+%                         %Add block to Blockchain, validates before adding
+%                         is_addblock_success = Blockchain.add_mined_block(Sample, CurBlock);
+%                         if(is_addblock_success == false)
+%                             disp('Block not added to chain');
+%                         end
+%                         Blockchain.print(Sample);
                     end
                     
-                     
 %                     %Validate chain
 %                     is_bc_valid = Blockchain.validate_chain(Sample);
 %                     if(is_bc_valid == false)
@@ -304,34 +319,10 @@ classdef WSMPTraffic
 %                         new_chain_broadcast = Blockchain.replace_blockchain(Sample, NewSample);
 %                         %Broadcast creation of new chain
 %                         %payload = new_chain_broadcast
-%                     end
-%                   
-                    persistent i
-                    if isempty(i)
-                        i = 0;
-                    end
-                    nonce = uint32(i);
-                    CurBlock = Blockchain.add_block(Sample, transaction, nonce);
-                    transaction = [payloadBuf(4), payloadBuf(5), payloadBuf(6)];
-                    %disp('Block created');
-                    %disp(CurBlock);          
-                    i = i + 1;
-
-                    filey = fopen('blocks.txt','a+');
-                    fclose(filey);
-                    fprintf (filey,'index: %d\ntimestamp: %s\ndata: %d %d %d\nnonce: %d\nhash: %s\nprevious_hash: %s\n\n', CurBlock.index, CurBlock.timestamp, CurBlock.data, CurBlock.nonce, CurBlock.hash, CurBlock.previous_hash); 
-                
-%                     
-                    %Blockchain.print(Sample);
-%                     %Consensus 
-%                     
-%                     %Add block to Blockchain, validates before adding
-%                     is_addblock_success = Blockchain.add_mined_block(Sample, CurBlock);
-%                     if(is_addblock_success == false)
-%                         disp('Block not added to chain');
-%                     end
-%                     Blockchain.print(Sample);
-%                  
+%                     end  
+                   
+                    
+                    %RSU sends back packets to vehicles
                     payloadBuf = payload.';
                     payloadBuf(1) = rsuGeneralPkt;      %pkt type 4: to send rsuGeneral
                     payloadBuf(4) = nodeId; %store the nodeId in the 4th payloadBuf
@@ -340,8 +331,6 @@ classdef WSMPTraffic
                     channel = 178;                    
                     WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, nodeId, channel);
                     nodeListInfo.nodeHazardWarningTxCount(nodeId+1, 1);
-%                     WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, nodeId, channel);
-%                     nodeListInfo.nodeHazardWarningTxCount(nodeId+1, 1);
 
                 case WSMPTraffic.rsuGeneralPkt
                     % Do something

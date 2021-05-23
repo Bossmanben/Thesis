@@ -127,7 +127,7 @@ hazardLoc = {'+x' 2 1}; %Define hazrd location
 fakeLoc = {'+x' 3 1};
 
 hazardEntryT = 5000; % Hazard occurence timestamp in milliseconds.
-hazardWarningPeriodicity = 300; % In milliseconds
+hazardWarningPeriodicity = 3000; % In milliseconds
 % hazardWarningPeriodicity = 4000; % In milliseconds
 fakehazardWarningPeriodicity = 150;
 
@@ -262,10 +262,6 @@ SmartContracts.constructor();
 
 %% Configure hazard related parameters and schedule hazard creation
 
-% Hazard appears on this road.
-hazardEntryT = 5000; % Hazard occurence timestamp in milliseconds.
-hazardWarningPeriodicity = 150; % In milliseconds
-
 hazardConfig.warningPeriodicity = hazardWarningPeriodicity; % Periodicity of warning packet in milliseconds.
 hazardConfig.fakewarningPeriodicity = fakehazardWarningPeriodicity;
 hazardConfig.offsetFromStart = 0.8*streetLen;  % Hazard location offset from start of road
@@ -354,26 +350,26 @@ RSUConfig.offsetFromStart = 0.8*streetLen;      %experiment w/ this
 rsuContainer4 = scenarioSetup.installRSU(RSUConfig);
 
 %% Fake Hazard Integration
-hazardConfigs=[hazardConfig;hazardConfig;hazardConfig;hazardConfig;hazardConfig;
-                hazardConfig;hazardConfig;hazardConfig;hazardConfig;hazardConfig];
-locs = [
-        {'-x' 2 2}
-        {'+y' 2 2}
-        {'-y' 1 2}
-        {'-y' 2 2}
-        {'+y' 3 2}
-        {'+y' 3 3}
-        {'-y' 2 3}
-        {'-y' 3 3}
-        {'+y' 4 3}
-        {'+y' 4 2}
-    
-        ];
-for i = 1:length(hazardConfigs)
-    hazardConfigs(i).location = locs(i,1:3);
-    %disp(hazardConfigs(i));
-    scenarioSetup.configureHazard(hazardConfigs(i));
-end
+% hazardConfigs=[hazardConfig;hazardConfig;hazardConfig;hazardConfig;hazardConfig;
+%                 hazardConfig;hazardConfig;hazardConfig;hazardConfig;hazardConfig];
+% locs = [
+%         {'-x' 2 2}
+%         {'+y' 2 2}
+%         {'-y' 1 2}
+%         {'-y' 2 2}
+%         {'+y' 3 2}
+%         {'+y' 3 3}
+%         {'-y' 2 3}
+%         {'-y' 3 3}
+%         {'+y' 4 3}
+%         {'+y' 4 2}
+%     
+%         ];
+% for i = 1:length(hazardConfigs)
+%     hazardConfigs(i).location = locs(i,1:3);
+%     %disp(hazardConfigs(i));
+%     scenarioSetup.configureHazard(hazardConfigs(i));
+% end
 
 %% Set up Visualization Logging
 config.hBlocks = hBlocks;
