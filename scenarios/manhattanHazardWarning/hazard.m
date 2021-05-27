@@ -25,7 +25,6 @@ classdef hazard
             % SocketInterface.RegisterRXCallback(roadHazards, @WaveRXCallback);
             
             nodeId = node.GetId();
-            %disp(nodeId);
             hazardPositionInfo = vehicularRoute ; % Instantiate route object
             
             % Set route
@@ -69,10 +68,9 @@ classdef hazard
             WSMPArgs.mm = 'ConstantVelocityMobilityModel';
             WSMPArgs.periodicity = hazardArgs.warningPeriodicity;
             WSMPArgs.repairTimestamp = hazardArgs.entryTime + hazardArgs.repairTime;
-            WSMPArgs.hazardId = nodeId;
-            %disp(WSMPArgs.nodeId);
-            % start sending periodic hazard warning
+            WSMPArgs.hazardId = nodeId;            
             
+            % start sending periodic hazard warning                                    
             %WSMPTraffic.runWSMPApp(WSMPArgs);
             Simulator.Schedule('WSMPTraffic.runWSMPApp', 1, WSMPArgs);
             
@@ -80,34 +78,31 @@ classdef hazard
             [payloadBuf, payloadSize]= WSMPTraffic.constructHazardWarning(WSMPArgs.nodeId, WSMPArgs.rInfo, WSMPArgs.mm);
             SmartContracts.register(payloadBuf);
             
-            
-            
 %             disp('hazard sends warning packet');
             hazard.getSetHazardTimeSlot(hazardArgs.entryTime, ...
                 hazardArgs.entryTime + hazardArgs.repairTime);
             visualizerTraces.logHazard(nodeId);
-%             disp(hazardArgs.fakeLoc);
             
-% %             % Set fake route
-%             fakelocation = hazardArgs.fakeLoc;
-%             fakehazardRoadId = topology.getStreetIdForBlock(cell2mat(fakelocation(2)), ...
-%                 cell2mat(fakelocation(3)), cell2mat(fakelocation(1)));
-%             fakehazardPositionInfo = vehicularRoute;
-%             fakehazardPositionInfo.setRoute(nodeId+1, fakehazardRoadId); %Change second argument to rand between 1 to 48?
-% %             nodeListInfo.routeObj(nodeId+1, fakehazardPositionInfo); %not sure if needed
-% 
-%             % Configure GPS Spoofing Attack
-%             
-%             GPSArgs.pType = 'hazardWarning';
-%             GPSArgs.nodeId = nodeId;
-%             GPSArgs.rInfo = fakehazardPositionInfo;
-%             GPSArgs.mm = 'ConstantVelocityMobilityModel';
-%             GPSArgs.periodicity = hazardArgs.fakewarningPeriodicity;
-%             GPSArgs.repairTimestamp = hazardArgs.entryTime + hazardArgs.repairTime;
-%             GPSArgs.hazardId = nodeId;
-%             
-% %             Simulator.Schedule('gpsSpoofing.rungpsApp', 1, GPSArgs);
-%             Simulator.Schedule('WSMPTraffic.runWSMPApp', 1, GPSArgs);
+            % Set fake route
+            fakelocation = hazardArgs.fakeLoc;
+            fakehazardRoadId = hazardArgs.topology.getStreetIdForBlock(cell2mat(fakelocation(2)), ...
+                cell2mat(fakelocation(3)), ...
+                cell2mat(fakelocation(1)));
+            fakehazardPositionInfo = vehicularRoute;
+            fakehazardPositionInfo.setRoute(nodeId+1, fakehazardRoadId); %Change second argument to rand between 1 to 48?
+            nodeListInfo.routeObj(nodeId+1, fakehazardPositionInfo); %not sure if needed
+            fakehazardPositionInfo.setCurrentStreetIndex(1);
+             
+            % Configure GPS Spoofing Attack                                   
+            GPSArgs.pType = 'hazardWarning';
+            GPSArgs.nodeId = nodeId;
+            GPSArgs.rInfo = fakehazardPositionInfo;
+            GPSArgs.mm = 'ConstantVelocityMobilityModel';
+            GPSArgs.periodicity = hazardArgs.fakewarningPeriodicity;
+            GPSArgs.repairTimestamp = hazardArgs.entryTime + hazardArgs.repairTime;
+            GPSArgs.hazardId = nodeId;            
+            
+            Simulator.Schedule('WSMPTraffic.runWSMPApp', 1, GPSArgs);
 
         end
         
