@@ -21,13 +21,14 @@ classdef WSMPTraffic
         function runWSMPApp(args)
             CCH = 178; % CCH to be used for all packet transmission
             channel = CCH;
+            
             switch(args.pType)
                 case 'hazardWarning'
                     timeS = Simulator.Now();
                     % Stop sending hazard warning if hazard has been removed 
                     if((timeS*1000) < args.repairTimestamp) % TODO: Some better alternative 
-                        [payloadBuf, payloadSize]= WSMPTraffic.constructHazardWarning(args.nodeId, args.rInfo, args.mm);
-                        WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, args.nodeId, channel);
+                        [payloadBuf, payloadSize]= WSMPTraffic.constructHazardWarning(args.nodeId, args.rInfo, args.mm);                        
+                        WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, args.nodeId, channel);                        
                         nodeListInfo.nodeHazardWarningTxCount(args.nodeId+1, 1);                      
                     else
                         % Schedule sending of 'hazard removed' packet so that stopped
@@ -83,8 +84,7 @@ classdef WSMPTraffic
             currentPosition(2) = ceil(currentPosition(2));
             currentPosition(3) = ceil(currentPosition(3));
             
-            currentStreetId = routeInfo.getStreetIdByIndex();
-            
+            currentStreetId = routeInfo.getStreetIdByIndex();      
             
             % ***********  Position beacon payload format ****************
             %      pktType(1 byte), time-to-live(1 byte), nodeId(2 bytes)
@@ -222,7 +222,7 @@ classdef WSMPTraffic
         end
         
         
-        % Receive packet handler for RSU -> for vehicle (temp)
+        % Receive packet handler for vehicle
         % 'nodedId' is receiving vehicleId
         function receivePkt(nodeId, pkt, length)
             payload = pkt(WSMPTraffic.headerSize+1:end);
@@ -230,26 +230,34 @@ classdef WSMPTraffic
             nodeListInfo.nodeRxCount(nodeId+1, 1); % Upading rx pkt count
             switch(payload(1)) % first byte in payload is pkt type
                 case WSMPTraffic.hazardWarning
-                    %do blockchain here
-                    %disp('Vehicle: send pkt 1 to rsu');
                     payloadBuf = payload.';
-                    payloadBuf(1) = 1;
-                    payloadBuf(4) = nodeId;
-                    payloadS = size(payloadBuf);
-                    payloadSize = payloadS(2);
-                    CCH = 178;
-                    channel = CCH;                  
-                    WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, nodeId, channel);
-                    nodeListInfo.nodeHazardWarningTxCount(nodeId+1, 1);
+                    if(payloadBuf(6) == 0)
+                        if(payloadBuf(4) == 0)                            
+                            payloadBuf(4) = nodeId;
+                            payloadS = size(payloadBuf);
+                            payloadSize = payloadS(2);
+                            CCH = 178;
+                            channel = CCH;  
+                            %  disp('1. receive pkt from hazard');
+                            WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, nodeId, channel);
+                            % disp('2. send pkt to rsu');
+                            nodeListInfo.nodeHazardWarningTxCount(nodeId+1, 1);
+
+
+                            % disp('Vehicle: receive pkt type 4 from rsu');
+                            nodeListInfo.nodeHazardWarningRxCount(nodeId+1, 1);
+                            mobilityIntelligence.handleHazardWarning(nodeId, ...
+                                payload, length-WSMPTraffic.headerSize);
+                        end
+                    end
                     
-                    nodeListInfo.nodeHazardWarningRxCount(nodeId+1, 1);
-                    mobilityIntelligence.handleHazardWarning(nodeId, ...
-                        payload, length-WSMPTraffic.headerSize);
-                    
-                    %disp('Vehicle: receive pkt type 4 from rsu');
+  
+                case WSMPTraffic.rsuGeneralPkt
                     nodeId = payloadBuf(4);
-                    payloadBuf(4) = 0;
+                    payloadBuf(4) = 0;                  %remove the nodeId from the 4th row
+                    payloadBuf(6) = 0;                  %remove the 1 from the 6th row
                     payload = payloadBuf.';
+%                     disp('5. receive validated pkt from rsu');
                     nodeListInfo.nodeHazardWarningRxCount(nodeId+1, 1);
                     mobilityIntelligence.handleHazardWarning(nodeId, ...
                         payload, length-WSMPTraffic.headerSize);  
@@ -257,48 +265,48 @@ classdef WSMPTraffic
             
         end
         
-        % Receive packet handler for VEHICLE -> for RSU (temp)
+        % Receive packet handler for RSU (temp)
         function revreceivePkt(nodeId, pkt, length)
             payload = pkt(WSMPTraffic.headerSize+1:end);
-            payloadBuf = payload.';
-            nodeListInfo.nodeRxCount(nodeId+1, 1); % Upading rx pkt count
+            nodeListInfo.nodeRxCount(nodeId+1, 1); % Updating rx pkt count
             switch(payload(1)) % first byte in payload is pkt type
                 case WSMPTraffic.hazardWarning
-                    
-                    
+                    %disp('3. receive pkt from vehicle');
                 % Base Blockchain Functionalities
                     
-                    %Instantiate Blockchain
-                    persistent Blockchain_Flag
-                    global Sample
+%                     %Instantiate Blockchain
+%                     persistent Blockchain_Flag
+%                     global Sample
+%                     
+%                     if isempty(Blockchain_Flag)
+%                         Blockchain_Flag = 0;
+%                         Sample = Blockchain.BlockchainNew();
+%                         disp('Initializing Blockchain');
+% %                         Blockchain.print(Sample);
+%                     end
+%                     Blockchain_Flag = Blockchain_Flag + 1;
                     
-                    if isempty(Blockchain_Flag)
-                        Blockchain_Flag = 0;
-                        Sample = Blockchain.BlockchainNew();
-                        disp('Initializing Blockchain');
-                        Blockchain.print(Sample);
-                    end
-                    Blockchain_Flag = Blockchain_Flag + 1;
-                                            
                     %validate packet
                     validated = SmartContracts.hazardValidation(payload);
-                                
+                    
+                    
                     if(validated == 1)
-                        disp('continue with consensus');
+                        disp('continued with consensus');
                         
-                        %Create Data Blocks
-                        persistent i
-                        if isempty(i)
-                            i = 0;
-                        end
-                        nonce = uint32(i);
-                        transaction = [payloadBuf(4), payloadBuf(5), payloadBuf(6)];        
-                        CurBlock = Blockchain.add_block(Sample, transaction, nonce);
-                        i = i + 1;
-                        %Block tracker
-                        filey = fopen('blocks.txt','a+');
-                        fclose(filey);
-                        fprintf (filey,'index: %d\ntimestamp: %s\ndata: %d %d %d\nnonce: %d\nhash: %s\nprevious_hash: %s\n\n', CurBlock.index, CurBlock.timestamp, CurBlock.data, CurBlock.nonce, CurBlock.hash, CurBlock.previous_hash); 
+%                         %Create Data Blocks
+%                         persistent i
+%                         if isempty(i)
+%                             i = 0;
+%                         end
+%                         nonce = uint32(i);
+%                         transaction = [payloadBuf(4), payloadBuf(5), payloadBuf(6)];        
+%                         CurBlock = Blockchain.add_block(Sample, transaction, nonce);
+%                         i = i + 1;
+%                         
+%                         %Block tracker
+%                         filey = fopen('blocks.txt','a+');
+%                         fclose(filey);
+%                         fprintf (filey,'index: %d\ntimestamp: %s\ndata: %d %d %d\nnonce: %d\nhash: %s\nprevious_hash: %s\n\n', CurBlock.index, CurBlock.timestamp, CurBlock.data, CurBlock.nonce, CurBlock.hash, CurBlock.previous_hash); 
 
                         %Consensus shit
 
@@ -308,8 +316,24 @@ classdef WSMPTraffic
 %                             disp('Block not added to chain');
 %                         end
 %                         Blockchain.print(Sample);
+
+                        % RSU sends back packets to vehicles
+                        payloadBuf = payload.';
+                        payloadBuf(1) = 4;      %pkt type 4: to send rsuGeneral
+                        payloadBuf(4) = nodeId; %store the nodeId in the 4th payloadBuf
+                        payloadBuf(6) = 1;      %put 1 on 6th row to not allow vehicle from resending stuff
+                        payloadS = size(payloadBuf);
+                        payloadSize = payloadS(2); %get payloadSize
+                        channel = 178;       
+                        WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, nodeId, channel);
+                        % disp('4. send pkt to vehicle');
+                        nodeListInfo.nodeHazardWarningTxCount(nodeId+1, 1);
+                        
+                    else 
+                        disp('saw a fake hazard, did not continue with consensus');
+                        %%do nothing
                     end
-                    
+                                                               
 %                     %Validate chain
 %                     is_bc_valid = Blockchain.validate_chain(Sample);
 %                     if(is_bc_valid == false)
@@ -319,19 +343,7 @@ classdef WSMPTraffic
 %                         new_chain_broadcast = Blockchain.replace_blockchain(Sample, NewSample);
 %                         %Broadcast creation of new chain
 %                         %payload = new_chain_broadcast
-%                     end  
-                   
-                    
-                    %RSU sends back packets to vehicles
-                    payloadBuf = payload.';
-                    payloadBuf(1) = rsuGeneralPkt;      %pkt type 4: to send rsuGeneral
-                    payloadBuf(4) = nodeId; %store the nodeId in the 4th payloadBuf
-                    payloadS = size(payloadBuf);
-                    payloadSize = payloadS(2); %get payloadSize
-                    channel = 178;                    
-                    WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, nodeId, channel);
-                    nodeListInfo.nodeHazardWarningTxCount(nodeId+1, 1);
-
+%                     end                 
                 case WSMPTraffic.rsuGeneralPkt
                     % Do something
             end
