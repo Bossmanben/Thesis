@@ -62,7 +62,7 @@ clear functions;
 
 % Configure simulation run time (In seconds)
 % simTime = 70;
-simTime = 6;
+simTime = 35;
 
 % Manhattan-grid configuration
 hBlocks = 4 ; % Number of horizontal blocks
@@ -127,19 +127,14 @@ hazardLoc = {'+x' 2 1}; %Define hazrd location
 fakeLoc = {'+x' 3 1};
 
 hazardEntryT = 5000; % Hazard occurence timestamp in milliseconds.
-hazardWarningPeriodicity = 3000; % In milliseconds
+hazardWarningPeriodicity = 150; % In milliseconds
 % hazardWarningPeriodicity = 4000; % In milliseconds
-fakehazardWarningPeriodicity = 150;
+fakehazardWarningPeriodicity = 1000;
 
 hazardLoc2 = {'-x' 3 4};
 % fakeLoc2 = {'+x' 2 1};
 fakeLoc2 = {'-x' 2 4};
 hazardEntryT2 = 6000;
-
-hazardLoc3 = {'+x' 2 1};
-fakeLoc3 = {'+y' 2 2};
-
-hazardLoc4 = {'-y' 3 2};
 
 % Set number of Rogue vehicles
 numRogueVehicles = 40;

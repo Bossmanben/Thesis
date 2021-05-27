@@ -9,7 +9,6 @@
 %
 
 function revWaveRXCallback(nodeId, pkt, pktSize, protocol)
-% disp('revWaveRXCallback is working');
 WSMP_PROT_NUM = 35036;
 % Check if it is a WSMP packet.
 if(protocol ==  WSMP_PROT_NUM)
