@@ -386,14 +386,15 @@ config.rsuC3 = rsuContainer3;
 config.rsuC4 = rsuContainer4;
 scenarioSetup.setUpVisualizationAndTraces(config);
 
-%% Blockchain
+%% Blockchain Test
+%global Sample 
 % Sample = Blockchain.BlockchainNew();
 % disp('Initializing Blockchain');
 % Blockchain.print(Sample);
 %  
 % nonce = uint32(1);
 % payload = 2;
-% CurBlock = Blockchain.add_block(Sample, payload, nonce);
+% CurBlock = Blockchain.create_block(Sample, payload, nonce);
 % disp('Block created');
 % disp(CurBlock);          
 % 
@@ -410,6 +411,7 @@ disp('Simulation Started ................');
 %MATLAB_Blockchain
 
 Simulator.Run();
+%Blockchain.print(Sample);
 
 %% Deinitialization
 % Delete all handle objects created during simulation.

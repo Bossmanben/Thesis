@@ -9,26 +9,28 @@ classdef Blockchain < handle
     end
     
     methods(Static)
-        function obj = Blockchain()
+        function obj = BlockchainNew()
             obj.blockchain = bc.Blockchain.genesis_block();
         end
         
-        function block = add_block(obj, data, nonce)
+        function block = create_block(Sample, data, nonce)
+            global Sample
             assert(isa(nonce, 'uint32'));
-            index = numel(obj.blockchain) + 1;
-            prev_hash = obj.blockchain(end).hash;
+            index = numel(Sample.blockchain) + 1;
+            prev_hash = Sample.blockchain(end).hash;
             timestamp = char(datetime);
             hash = bc.Blockchain.calculate_hash(index, prev_hash, timestamp, nonce, data);
             block = bc.Block(index, prev_hash, timestamp, data, nonce, hash);
-            obj.blockchain(end+1) = block;        
+            %Sample.blockchain(end+1) = block;
         end
         
-        function added = add_mined_block(obj, block)
+        function added = add_mined_block(Sample, block)
+        	global Sample;
             assert(isa(block, 'bc.Block'));
             
-            valid = bc.Blockchain.validate_block(block, obj.blockchain(end));
+            valid = bc.Blockchain.validate_block(block, Sample.blockchain(end));
             if valid
-                obj.blockchain(end+1) = block;   
+                Sample.blockchain(end+1) = block;   
                 added = true;
             else
                 added = false;
@@ -105,8 +107,8 @@ classdef Blockchain < handle
             % Create genesis block
             index = 1; % Yes it is MATLAB
             prev_hash = char(0);
-            timestamp = '07-Dec-2017 01:19:33';
-            data = 'The origin';
+            timestamp = char(datetime);
+            data = 198;
             nonce = uint32(0);
             hash = char(uint8([159 253 165 212 162 203 121 5 144 7 7 212 3 29 209 119 128 39 5 152 71 69 214 107 142 245 155 146 123 159 164 236]));
             gen = bc.Block(index, prev_hash, timestamp, data, nonce, hash); 

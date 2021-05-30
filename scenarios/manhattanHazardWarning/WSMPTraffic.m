@@ -284,7 +284,7 @@ classdef WSMPTraffic
                     validated = SmartContracts.hazardValidation(payload);
                                 
                     if(validated == 1)
-                        disp('continue with consensus');
+                        %disp('continue with consensus');
                         
                         %Create Data Blocks
                         persistent i
@@ -292,23 +292,27 @@ classdef WSMPTraffic
                             i = 0;
                         end
                         nonce = uint32(i);
-                        transaction = [payloadBuf(4), payloadBuf(5), payloadBuf(6)];        
-                        CurBlock = Blockchain.add_block(Sample, transaction, nonce);
+                        transaction = [payloadBuf(4), payloadBuf(5), payloadBuf(6)]; 
+                        disp('1');
+                        CurBlock = Blockchain.create_block(Sample, transaction, nonce);
                         i = i + 1;
+                        disp('2');
                         %Block tracker
                         filey = fopen('blocks.txt','a+');
-                        fclose(filey);
                         fprintf (filey,'index: %d\ntimestamp: %s\ndata: %d %d %d\nnonce: %d\nhash: %s\nprevious_hash: %s\n\n', CurBlock.index, CurBlock.timestamp, CurBlock.data, CurBlock.nonce, CurBlock.hash, CurBlock.previous_hash); 
-
+                        fclose(filey);
+                        disp('3');
                         %Consensus shit
-
-%                         %Add block to Blockchain, validates before adding
-%                         is_addblock_success = Blockchain.add_mined_block(Sample, CurBlock);
-%                         if(is_addblock_success == false)
-%                             disp('Block not added to chain');
-%                         end
-%                         Blockchain.print(Sample);
+                        
+                        %Add block to Blockchain, validates before adding
+                        is_addblock_success = Blockchain.add_mined_block(Sample, CurBlock);
+                        if(is_addblock_success == false)
+                            disp('Block not added to chain');
+                        end
+                        disp('4');
                     end
+                    
+
                     
 %                     %Validate chain
 %                     is_bc_valid = Blockchain.validate_chain(Sample);
