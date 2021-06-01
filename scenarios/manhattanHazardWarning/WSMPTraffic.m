@@ -347,6 +347,8 @@ classdef WSMPTraffic
             global Prepare_Counter
             persistent Commit_Counter
             persistent Reply_Counter
+            global Sample 
+            persistent i
             payload = pkt(WSMPTraffic.headerSize+1:end);
             payloadBuf = payload.';
             nodeListInfo.nodeRxCount(nodeId+1, 1); % Updating rx pkt count
@@ -356,8 +358,7 @@ classdef WSMPTraffic
                 % Base Blockchain Functionalities
                     
                     %Instantiate Blockchain
-                    persistent Blockchain_Flag
-                    global Sample                    
+                    persistent Blockchain_Flag                                       
                     
                     if isempty(Blockchain_Flag)
                         Blockchain_Flag = 0;
@@ -373,7 +374,7 @@ classdef WSMPTraffic
                     if(validated == 1)                        
                         
                         %Create Data Blocks
-                        persistent i
+                        
                         if isempty(i)
                             i = 0;
                         end
@@ -382,7 +383,7 @@ classdef WSMPTraffic
                         CurBlock = Blockchain.create_block(Sample, transaction, nonce);
                         i = i + 1;
                         
-                        if isempty(Sample)
+                        if (Sample.blockchain(end).data == 198)
                             %Add block to Blockchain, validates before adding
                             is_addblock_success = Blockchain.add_mined_block(Sample, CurBlock);
                             if(is_addblock_success == false)
@@ -390,11 +391,11 @@ classdef WSMPTraffic
                             end
                         else                
                             checker = 0;
-%                             for idx=1:numel(Sample.blockchain) %go through Blockchain                                
-%                                 if(CurBlock.data == Sample.blockchain(idx).data)                                
-% %                                     checker = 1;        %(Data Block is not Unique if Checker = 1)
-%                                 end
-%                             end
+                            for idx=1:numel(Sample.blockchain) %go through Blockchain                                
+                                if(CurBlock.data == Sample.blockchain(idx).data)                                
+                                    checker = 1;        %(Data Block is not Unique if Checker = 1)
+                                end
+                            end
                             
                             if(checker == 0)   
                                 %Unique packet scenario -> Go through
@@ -404,12 +405,7 @@ classdef WSMPTraffic
                                 ConsensusAlgorithm.controller(Data, nodeId);
                             end
                             
-                        end                                               
-                        
-                        %Block tracker
-                        filey = fopen('blocks.txt','a+');
-                        fprintf (filey,'index: %d\ntimestamp: %s\ndata: %d %d %d\nnonce: %d\nhash: %s\nprevious_hash: %s\n\n', CurBlock.index, CurBlock.timestamp, CurBlock.data, CurBlock.nonce, CurBlock.hash, CurBlock.previous_hash); 
-                        fclose(filey);
+                        end                                                                                               
                         
                         % RSU sends back packets to vehicles                        
                         payloadBuf(1) = 4;      %pkt type 4: to send rsuGeneral
@@ -540,6 +536,35 @@ classdef WSMPTraffic
                         
                         ConsensusAlgorithm.reply();
                         disp("Finished reply");
+                        
+                        %Create Data Blocks
+                        if isempty(i)
+                            i = 0;
+                        end
+                        nonce = uint32(i);
+                        transaction = [payloadBuf(5), payloadBuf(6), payloadBuf(7)];        
+                        CurBlock = Blockchain.create_block(Sample, transaction, nonce);
+                        i = i + 1;
+                        
+                        %Add block to Blockchain, validates before adding
+                        is_addblock_success = Blockchain.add_mined_block(Sample, CurBlock);
+                        if(is_addblock_success == false)
+                            disp('Block not added to chain');
+                        end
+                        Blockchain.print(Sample);
+                        
+                        %Block tracker
+                        filey = fopen('blocks.txt','a+');
+                        for idx=1:numel(Sample.blockchain)
+                            fprintf(filey, 'index: %d\n', Sample.blockchain(idx).index); 
+                            fprintf(filey, 'timestamp: %s\n', Sample.blockchain(idx).timestamp);
+                            fprintf(filey, 'data: %d\n', Sample.blockchain(idx).data);
+                            fprintf(filey, 'nonce: %d\n', Sample.blockchain(idx).nonce);
+                            fprintf(filey, 'hash: %s\n', Sample.blockchain(idx).hash);
+                            fprintf(filey, 'previous_hash: %s\n\n', Sample.blockchain(idx).previous_hash);
+                        end
+                        fclose(filey);
+                        
                         Reply_Counter = 0;
                     end
                     Commit_Counter = Commit_Counter + 1;
