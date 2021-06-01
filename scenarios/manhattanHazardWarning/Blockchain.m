@@ -11,7 +11,7 @@ classdef Blockchain < handle
             obj.blockchain = bc.Blockchain.genesis_block();
         end
         
-        function block = add_block(Sample, data, nonce)
+        function block = create_block(Sample, data, nonce)
             global Sample
             assert(isa(nonce, 'uint32'));
             index = numel(Sample.blockchain) + 1;
@@ -19,15 +19,16 @@ classdef Blockchain < handle
             timestamp = char(datetime);
             hash = bc.Blockchain.calculate_hash(index, prev_hash, timestamp, nonce, data);
             block = bc.Block(index, prev_hash, timestamp, data, nonce, hash);
-            Sample.blockchain(end+1) = block;
+            %Sample.blockchain(end+1) = block;
         end
         
-        function added = add_mined_block(obj, block)
+        function added = add_mined_block(Sample, block)
+            global Sample
             assert(isa(block, 'bc.Block'));
             
-            valid = bc.Blockchain.validate_block(block, obj.blockchain(end));
+            valid = bc.Blockchain.validate_block(block, Sample.blockchain(end));
             if valid
-                obj.blockchain(end+1) = block;   
+                Sample.blockchain(end+1) = block;   
                 added = true;
             else
                 added = false;
@@ -155,10 +156,10 @@ classdef Blockchain < handle
             assert(isa(prev_block, 'bc.Block'));
             
             % FIXME check for correct hash (with 0s)
-            if ~(new_block.hash(1:2) == char(zeros(1,2)))
-                valid = false;
-                return;
-            end
+%             if ~(new_block.hash(1:2) == char(zeros(1,2)))
+%                 valid = false;
+%                 return;
+%             end
             
             if (prev_block.index+1) ~= new_block.index
                 valid = false;

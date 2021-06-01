@@ -62,7 +62,7 @@ clear functions;
 
 % Configure simulation run time (In seconds)
 % simTime = 70;
-simTime = 35;
+simTime = 15;
 
 % Manhattan-grid configuration
 hBlocks = 4 ; % Number of horizontal blocks
@@ -387,7 +387,7 @@ scenarioSetup.setUpVisualizationAndTraces(config);
 % Blockchain.print(Sample);
 %  
 % nonce = uint32(1);
-% payload = 2;
+% payload = [2 8 9];
 % CurBlock = Blockchain.add_block(Sample, payload, nonce);
 % disp('Block created');
 % disp(CurBlock);          
@@ -396,7 +396,33 @@ scenarioSetup.setUpVisualizationAndTraces(config);
 % if(is_addblock_success == false)
 %     disp('Block not added to chain');
 % end
-% Blockchain.print(Sample);
+% % Blockchain.print(Sample);
+% ConsensusAlgorithm.controller(CurBlock);
+% RSU1 = struct('state', {}, 'leadermsg', {});
+% RSU2 = struct('state', {}, 'leadermsg', {});
+% RSU3 = struct('state', {}, 'leadermsg', {});
+% RSU4 = struct('state', {}, 'leadermsg', {});
+% Backup1 = [RSU1 RSU2 RSU3 RSU4];
+% leadermessage = [8 9 2];
+% msg.state = "preprepare";
+% msg.leadermsg = leadermessage;
+% for i = 1:4
+%     Backup1(1,i) = msg;
+%     Backup1(2,i) = msg;
+%     Backup1(3,i) = msg;
+%     Backup1(4,i) = msg;
+% end
+% 
+% % disp(Backup1(1,1).state);
+% D_Counter = 1;
+% D = zeros(12,3);
+% C1 = 53;
+% C2 = 2; 
+% C3 = 0;
+% message =  [C1 C2 C3];
+% D(D_Counter,1:3) = message;
+% disp(D);
+
 
 %% Run simulation
 Simulator.Stop(simTime);

@@ -14,6 +14,9 @@ classdef WSMPTraffic
         positionBeacon=2 % pkt type
         hazardRemovedPkt=3 % pkt type
         rsuGeneralPkt=4 % pkt type
+        prepreparePkt = 5 % pkt type
+        preparePkt = 6 % pkt type
+        commitPkt = 7 % pkt type
         headerSize=12 % Size of WSMP header attached to each packet.
     end
     
@@ -90,6 +93,7 @@ classdef WSMPTraffic
             %      pktType(1 byte), time-to-live(1 byte), nodeId(2 bytes)
             %      streetId(2 bytes), xPos(2 bytes), yPos (2 bytes), zPos(2
             %      bytes)
+            %      1 2 | 3 0 | 8 9 | x x | y y | z z
             
             % Packet filling: Filling of packet fields must be in the same
             % order as desired in the packet.
@@ -109,6 +113,8 @@ classdef WSMPTraffic
             payload.zpos = uint16(bin2dec(utils.dec2twos(currentPosition(3), 16)));
             
             [payloadBuf, payloadSize] = utils.packStruct(payload);
+%             disp("payloadBuf of hazard warning");
+%             disp(payloadBuf);
         end
         
         % Construct 'hazard warning' packet to be sent by hazard.
@@ -206,6 +212,38 @@ classdef WSMPTraffic
             [payloadBuf, payloadSize] = utils.packStruct(payload);
         end
                 
+        function [payloadBuf, payloadSize] = constructConsensusPacket(Leader, ...
+                                             pktType, Data, RSU)                     
+            % ***********  Position beacon payload format ****************%
+            %      pktType(1 byte), time-to-live(1 byte), nodeId(2 bytes)
+            %      0 (6 bytes)
+            % 5 : preprepare, 6: prepare, 7: commit, 8: reply
+            % example: 5 2 49 0 0 0 0 0 0 0
+            % example: 5 | 2 | 52 0 | D D | D 0 | 49 0 | 
+     
+            % Filling packet: Filling of packet fields must be in the same
+            % order as desired in the packet.
+            
+            payload.pktType = uint8(pktType); % filling packet type
+            payload.ttl = uint8(2); % filling TTL */
+            payload.nodeId = uint16(Leader); % Filling Sending Node
+            
+            DataBlock = Data;
+            % As coordinates can be negative too, converting into 2's
+            % complement form,then converting to decimal (so negative
+            % integers will be sent huge positive numbers) value of x,y,z
+            % coordinates assumed to be 2 bytes size for each dimension.            
+            
+            payload.xpos = [uint8(DataBlock(1)); uint8(DataBlock(2))];
+            payload.ypos = uint16(DataBlock(3));
+            payload.zpos = uint16(RSU);           
+            [payloadBuf, payloadSize] = utils.packStruct(payload);
+%             disp("payloadBuf constructed");
+%             disp(payloadBuf);
+
+        end
+        
+        
         % Send the WSMP packet
         function sendWSMPPkt(payloadBuf, payloadSize,nodeId, channel)
             bssWildcard = 'FF:FF:FF:FF:FF:FF';
@@ -249,9 +287,47 @@ classdef WSMPTraffic
                             mobilityIntelligence.handleHazardWarning(nodeId, ...
                                 payload, length-WSMPTraffic.headerSize);
                         end
+                    end     
+                case WSMPTraffic.prepreparePkt                    
+                    if(payloadBuf(8) == 0)
+                        if(payloadBuf(4) == 0)                                
+                            payloadBuf(4) = nodeId;
+                            payloadBuf(8) = 1;
+                            payloadS = size(payloadBuf);
+                            payloadSize = payloadS(2);
+                            CCH = 178;
+                            channel = CCH;  
+                            WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, nodeId, channel);
+                            nodeListInfo.nodeHazardWarningTxCount(nodeId+1, 1);
+
+                        end
+                    end  
+                case WSMPTraffic.preparePkt
+                    if(payloadBuf(8) == 0)
+                        if(payloadBuf(4) == 0)
+                            payloadBuf(4) = nodeId;
+                            payloadBuf(8) = 1;
+                            payloadS = size(payloadBuf);
+                            payloadSize = payloadS(2);
+                            CCH = 178;
+                            channel = CCH;  
+                            WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, nodeId, channel);                            
+                            nodeListInfo.nodeHazardWarningTxCount(nodeId+1, 1);
+                        end
                     end
-                    
-  
+                case WSMPTraffic.commitPkt
+                    if(payloadBuf(8) == 0)
+                        if(payloadBuf(4) == 0)
+                            payloadBuf(4) = nodeId;
+                            payloadBuf(8) = 1;
+                            payloadS = size(payloadBuf);
+                            payloadSize = payloadS(2);
+                            CCH = 178;
+                            channel = CCH;  
+                            WSMPTraffic.sendWSMPPkt(payloadBuf, payloadSize, nodeId, channel);                            
+                            nodeListInfo.nodeHazardWarningTxCount(nodeId+1, 1);
+                        end
+                    end
                 case WSMPTraffic.rsuGeneralPkt
                     nodeId = payloadBuf(4);
                     payloadBuf(4) = 0;                  %remove the nodeId from the 4th row
@@ -267,58 +343,75 @@ classdef WSMPTraffic
         
         % Receive packet handler for RSU (temp)
         function revreceivePkt(nodeId, pkt, length)
+            persistent Backup_Flag
+            global Prepare_Counter
+            persistent Commit_Counter
+            persistent Reply_Counter
             payload = pkt(WSMPTraffic.headerSize+1:end);
+            payloadBuf = payload.';
             nodeListInfo.nodeRxCount(nodeId+1, 1); % Updating rx pkt count
             switch(payload(1)) % first byte in payload is pkt type
                 case WSMPTraffic.hazardWarning
                     %disp('3. receive pkt from vehicle');
                 % Base Blockchain Functionalities
                     
-%                     %Instantiate Blockchain
-%                     persistent Blockchain_Flag
-%                     global Sample
-%                     
-%                     if isempty(Blockchain_Flag)
-%                         Blockchain_Flag = 0;
-%                         Sample = Blockchain.BlockchainNew();
-%                         disp('Initializing Blockchain');
-% %                         Blockchain.print(Sample);
-%                     end
-%                     Blockchain_Flag = Blockchain_Flag + 1;
+                    %Instantiate Blockchain
+                    persistent Blockchain_Flag
+                    global Sample                    
+                    
+                    if isempty(Blockchain_Flag)
+                        Blockchain_Flag = 0;
+                        Sample = Blockchain.BlockchainNew();
+                        disp('Initializing Blockchain');
+%                         Blockchain.print(Sample);
+                    end
+                    Blockchain_Flag = Blockchain_Flag + 1;
                     
                     %validate packet
                     validated = SmartContracts.hazardValidation(payload);
-                    
-                    
-                    if(validated == 1)
-                        disp('continued with consensus');
+                                        
+                    if(validated == 1)                        
                         
-%                         %Create Data Blocks
-%                         persistent i
-%                         if isempty(i)
-%                             i = 0;
-%                         end
-%                         nonce = uint32(i);
-%                         transaction = [payloadBuf(4), payloadBuf(5), payloadBuf(6)];        
-%                         CurBlock = Blockchain.add_block(Sample, transaction, nonce);
-%                         i = i + 1;
-%                         
-%                         %Block tracker
-%                         filey = fopen('blocks.txt','a+');
-%                         fclose(filey);
-%                         fprintf (filey,'index: %d\ntimestamp: %s\ndata: %d %d %d\nnonce: %d\nhash: %s\nprevious_hash: %s\n\n', CurBlock.index, CurBlock.timestamp, CurBlock.data, CurBlock.nonce, CurBlock.hash, CurBlock.previous_hash); 
-
-                        %Consensus shit
-
-%                         %Add block to Blockchain, validates before adding
-%                         is_addblock_success = Blockchain.add_mined_block(Sample, CurBlock);
-%                         if(is_addblock_success == false)
-%                             disp('Block not added to chain');
-%                         end
-%                         Blockchain.print(Sample);
-
-                        % RSU sends back packets to vehicles
-                        payloadBuf = payload.';
+                        %Create Data Blocks
+                        persistent i
+                        if isempty(i)
+                            i = 0;
+                        end
+                        nonce = uint32(i);
+                        transaction = [payloadBuf(3), payloadBuf(5), payloadBuf(6)];        
+                        CurBlock = Blockchain.create_block(Sample, transaction, nonce);
+                        i = i + 1;
+                        
+                        if isempty(Sample)
+                            %Add block to Blockchain, validates before adding
+                            is_addblock_success = Blockchain.add_mined_block(Sample, CurBlock);
+                            if(is_addblock_success == false)
+                                disp('Block not added to chain');
+                            end
+                        else                
+                            checker = 0;
+%                             for idx=1:numel(Sample.blockchain) %go through Blockchain                                
+%                                 if(CurBlock.data == Sample.blockchain(idx).data)                                
+% %                                     checker = 1;        %(Data Block is not Unique if Checker = 1)
+%                                 end
+%                             end
+                            
+                            if(checker == 0)   
+                                %Unique packet scenario -> Go through
+                                %consensus + send to vehicle
+                                Backup_Flag = 0;
+                                Data = CurBlock.data;
+                                ConsensusAlgorithm.controller(Data, nodeId);
+                            end
+                            
+                        end                                               
+                        
+                        %Block tracker
+                        filey = fopen('blocks.txt','a+');
+                        fprintf (filey,'index: %d\ntimestamp: %s\ndata: %d %d %d\nnonce: %d\nhash: %s\nprevious_hash: %s\n\n', CurBlock.index, CurBlock.timestamp, CurBlock.data, CurBlock.nonce, CurBlock.hash, CurBlock.previous_hash); 
+                        fclose(filey);
+                        
+                        % RSU sends back packets to vehicles                        
                         payloadBuf(1) = 4;      %pkt type 4: to send rsuGeneral
                         payloadBuf(4) = nodeId; %store the nodeId in the 4th payloadBuf
                         payloadBuf(6) = 1;      %put 1 on 6th row to not allow vehicle from resending stuff
@@ -344,8 +437,112 @@ classdef WSMPTraffic
 %                         %Broadcast creation of new chain
 %                         %payload = new_chain_broadcast
 %                     end                 
-                case WSMPTraffic.rsuGeneralPkt
-                    % Do something
+                case WSMPTraffic.prepreparePkt
+                    if (Backup_Flag == 0)
+                        Backup_Flag = 1;
+                        global Backup
+                        RSU1 = struct('state', {}, 'leadermsg', {});
+                        RSU2 = struct('state', {}, 'leadermsg', {});
+                        RSU3 = struct('state', {}, 'leadermsg', {});
+                        RSU4 = struct('state', {}, 'leadermsg', {});
+                        
+                        Backup = [RSU1 RSU2 RSU3 RSU4];
+                        sender = payloadBuf(9);
+                        Leader = payloadBuf(3);
+                                                                        
+                        
+%                       faulty = [payloadBuf(9), payload(10)];
+                        checker = 1;
+
+%                     for i = 1:length(faulty)
+%                         if(faulty(i) ~= 0)
+%                             checker = 0;
+%                         end
+%                     end
+%                         disp("PayloadBuf of RSU");
+%                         disp(payloadBuf);
+                        if(sender == Leader)||(checker == 0 )
+                            %do nothing
+                        else
+                            % else prepare a message and add to backup
+                            leadermessage = payloadBuf(5:7);
+                            msg.state = "preprepare";
+                            msg.leadermsg = leadermessage;
+                            for j = 49:52
+                                if(j ~= Leader)
+                                    %append message to backup
+                                    Backup(j-48, 1) = msg;
+                                else
+                                    msg.state = 0;
+                                    msg.leadermsg = 0;
+                                    Backup(j-48, 1) = msg;
+                                end
+
+                            end
+                            ConsensusAlgorithm.prepare(Leader);
+                            disp("Finished prepare");
+                            Prepare_Counter = 0;
+                        end   
+                    end
+                    Backup_Flag = Backup_Flag + 1;                                     
+                case WSMPTraffic.preparePkt
+                    if (Prepare_Counter == 0)
+                        Prepare_Counter = 1;
+                        global Backup
+
+                        Leader = payloadBuf(3);
+                        leadermessage = payloadBuf(5:7);                        
+                        
+                        for j = 1:4
+                            for k = 2:4
+                                if(j ~= k)
+                                    %append message to backup
+                                    msg.state = "prepare";
+                                    msg.leadermsg = leadermessage;
+                                    Backup(j,k) = msg;
+%                                     disp("j"+j);
+%                                     disp("k"+k);
+%                                     disp(Backup(j,k));
+                                else
+                                    msg.state = 0;
+                                    msg.leadermsg = 0;
+                                    Backup(j,k) = msg;
+%                                     disp("j"+j);
+%                                     disp("k"+k);
+%                                     disp(Backup(j,k));
+                                end
+                            end                                                
+                        end
+                        ConsensusAlgorithm.commit(Leader);
+                        disp("Finished commit");
+                        Commit_Counter = 0;
+                    end                                                                                
+                    Prepare_Counter = Prepare_Counter + 1;    
+                case WSMPTraffic.commitPkt
+                    if(Commit_Counter == 0)
+                        Commit_Counter = 1;
+                        
+                        global Backup                        
+                        leadermessage = payloadBuf(5:7);
+                        
+                        for j = 1:4
+                            for k = 5:7
+                                % append message to backup
+                                msg.state = "commit";
+                                msg.leadermsg = leadermessage;
+                                Backup(j,k) = msg;
+%                                 disp("j"+j);
+%                                 disp("k"+k);
+%                                 disp(Backup(j,k));
+                                
+                            end                                                
+                        end
+                        
+                        ConsensusAlgorithm.reply();
+                        disp("Finished reply");
+                        Reply_Counter = 0;
+                    end
+                    Commit_Counter = Commit_Counter + 1;
             end
             
         end
