@@ -102,7 +102,7 @@ classdef hazard
             GPSArgs.repairTimestamp = hazardArgs.entryTime + hazardArgs.repairTime;
             GPSArgs.hazardId = nodeId;            
             
-            Simulator.Schedule('WSMPTraffic.runWSMPApp', 1, GPSArgs);
+%             Simulator.Schedule('WSMPTraffic.runWSMPApp', 1, GPSArgs);
 
         end
         

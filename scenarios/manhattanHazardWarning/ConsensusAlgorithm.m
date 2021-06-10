@@ -37,10 +37,13 @@ classdef ConsensusAlgorithm
             % a block hash and a digital signature of the node, which then
             % becomes a leader RSU.
             
-            %NodeId of RSU: 49 - 51 (@ 9 cars)
+            %NodeId of RSU: 49 - 52 (@ 9 cars)
+            %NodeId of RSU: 45 - 48 (@ 5 cars)
+            %NodeId of RSU: 50 - 53 (@ 10 cars)
+            %NodeId of RSU: 55 - 58 (@ 15 cars)
             % F = number of nodes
-            xmin = 49;
-            xmax = 52;
+            xmin = 45;
+            xmax = 48;
             n = 1;
             Leader = xmin+randi(1,n)*(xmax-xmin);
         end   
@@ -86,10 +89,10 @@ classdef ConsensusAlgorithm
             global Backup
             
             for i=1:4                                
-                if(Leader-48 ~= i)
+                if(Leader-44 ~= i)
                     curObj = Backup(i, 1);
                     mess = curObj.leadermsg;
-                    RSU = i + 48;
+                    RSU = i + 44;
                     nodeId = RSU;
                     pktType = 6;
                     [payloadBuf, payloadSize] = WSMPTraffic.constructConsensusPacket(Leader, ...
@@ -127,7 +130,7 @@ classdef ConsensusAlgorithm
                 if (COUNT >= (SUM))         
                     curObj = Backup(1, k);
                     mess = curObj.leadermsg;
-                    RSU = k + 48;
+                    RSU = k + 44;
                     nodeId = RSU;
                     pktType = 7;
                     [payloadBuf, payloadSize] = WSMPTraffic.constructConsensusPacket(Leader, ...

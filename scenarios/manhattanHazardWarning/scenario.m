@@ -62,7 +62,7 @@ clear functions;
 
 % Configure simulation run time (In seconds)
 % simTime = 70;
-simTime = 55;
+simTime = 70;
 
 % Manhattan-grid configuration
 hBlocks = 4 ; % Number of horizontal blocks
@@ -99,10 +99,10 @@ journeyList = {
     { {'+y' 1 3}        {'-y' 2 1 } } %      .3
     { {'+y' 2 1}        {'-y' 1 4 } } %      .4
     { {'+x' 3 1}        {'-y' 3 4 } } %      .5
-    { {'-x' 1 2}        {'-x' 2 3 } } %      .6
-    { {'+x' 4 1}        {'-x' 1 4 } } %      .7
-    { {'-y' 2 1}        {'+x' 2 2 } } %      .8
-    { {'+y' 1 1}        {'+x' 2 2 } } %      .9
+%     { {'-x' 1 2}        {'-x' 2 3 } } %      .6
+%     { {'+x' 4 1}        {'-x' 1 4 } } %      .7
+%     { {'-y' 2 1}        {'+x' 2 2 } } %      .8
+%     { {'+y' 1 1}        {'+x' 2 2 } } %      .9
 %     { {'+x' 4 2}        {'+x' 4 1 } } %      .10
 %     { {'-y' 3 2}        {'-y' 3 1 } } %      .11   
 %     { {'+y' 2 3}        {'+x' 1 4 } } %      .12
@@ -119,7 +119,13 @@ journeyList = {
 % chosen.
 %speedMatrix = [89 90 82 100 91 89 87 85 99];
 %speedMatrix = [95 90 98 100 91 94 87 85 99 86 90];
-speedMatrix = [19 20 22 21 91 21 20 22 100];
+% 5 cars
+speedMatrix = [19 20 22 21 91];
+% 10 cars
+% speedMatrix = [19 20 22 21 91 21 20 22 100 16];
+% 15 cars
+% speedMatrix = [19 20 22 21 91 21 20 22 100 16 12 90 82 67 50];
+
 
 % Hazard appears on this road.
 hazardLoc = {'+x' 2 1}; %Define hazrd location
@@ -345,26 +351,26 @@ RSUConfig.offsetFromStart = 0.8*streetLen;      %experiment w/ this
 rsuContainer4 = scenarioSetup.installRSU(RSUConfig);
 
 %% Fake Hazard Integration
-hazardConfigs=[hazardConfig;hazardConfig;hazardConfig;hazardConfig;hazardConfig;
-                hazardConfig;hazardConfig;hazardConfig;hazardConfig;hazardConfig];
-locs = [
-        {'-x' 2 2}
-        {'+y' 2 2}
-        {'-y' 1 2}
-        {'-y' 2 2}
-        {'+y' 3 2}
-        {'+y' 3 3}
-        {'-y' 2 3}
-        {'-y' 3 3}
-        {'+y' 4 3}
-        {'+y' 4 2}
-    
-        ];
-for i = 1:length(hazardConfigs)
-    hazardConfigs(i).location = locs(i,1:3);
-    %disp(hazardConfigs(i));
-    scenarioSetup.configureHazard(hazardConfigs(i));
-end
+% hazardConfigs=[hazardConfig;hazardConfig;hazardConfig;hazardConfig;hazardConfig;
+%                 hazardConfig;hazardConfig;hazardConfig;hazardConfig;hazardConfig];
+% locs = [
+%         {'-x' 2 2}
+%         {'+y' 2 2}
+%         {'-y' 1 2}
+%         {'-y' 2 2}
+%         {'+y' 3 2}
+%         {'+y' 3 3}
+%         {'-y' 2 3}
+%         {'-y' 3 3}
+%         {'+y' 4 3}
+%         {'+y' 4 2}
+%     
+%         ];
+% for i = 1:length(hazardConfigs)
+%     hazardConfigs(i).location = locs(i,1:3);
+%     %disp(hazardConfigs(i));
+%     scenarioSetup.configureHazard(hazardConfigs(i));
+% end
 
 %% Set up Visualization Logging
 config.hBlocks = hBlocks;

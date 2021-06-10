@@ -464,14 +464,14 @@ classdef WSMPTraffic
                             leadermessage = payloadBuf(5:7);
                             msg.state = "preprepare";
                             msg.leadermsg = leadermessage;
-                            for j = 49:52
+                            for j = 45:48
                                 if(j ~= Leader)
                                     %append message to backup
-                                    Backup(j-48, 1) = msg;
+                                    Backup(j-44, 1) = msg;
                                 else
                                     msg.state = 0;
                                     msg.leadermsg = 0;
-                                    Backup(j-48, 1) = msg;
+                                    Backup(j-44, 1) = msg;
                                 end
 
                             end
