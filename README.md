@@ -68,3 +68,18 @@ All examples are placed under ‘scenarios’ folder. Following steps are applic
 3.	To visualize the results of the simulation, run the MATLAB script in the ‘visualizer’ folder of the same example.
 
     `>>topologyVisualizer.m`
+
+
+## Attack Model
+Two data integrity attacks were incorporated into the simulation. These two include GPS Spoofing and Sensor Decption Attack.
+
+1. GPS Spoofing: To integrate this attack in the simulation, uncomment line 105 (Simulator.Schedule('WSMPTraffic.runWSMPApp', 1, GPSArgs);) in hazard.m. Afterwards, run the simulation again.
+2. Sensor Deception: To integrate this attack, uncomment line 354 to 373 in scenario.m under the section "Fake Hazard Integration". Next, uncomment line 111 to 130,  157 to 196 in visualizerTraces.m. Then, run the simulation again.
+
+
+## Blockchain Integration
+After the data integrity attacks were modeled and integrated into the simulation, the blockchain-based ITS was implemented in the system. The blockchain-based ITS consists of four parts namely, Consortium Blockchain, Block Structure, Smart Contracts, and Consensus Algorithm. All these components work hand in hand to fully implement the blockchain in the system.
+1. Consortium Blockchain: used RSUs as our pre-selected nodes. The role of these nodes was to authenticate the data being broadcasted in the network. Since there are only four RSUs, it enables faster consensus and block generation.
+2. Block Structure:  main component of the blockchain implementation.  The components of a block include the hash of the current block, Time Stamp, Main Data, Hash of the previous block, and other information. The Main Data contained the ID and location of a hazard while Other Information consisted of index and nonce. Hashes  used  the  SHA-256  cryptographic  hash  algorithm  which  provided  the  data  immutability feature of the system.
+3. Smart Contracts: used to filter data that would go through the consensus algorithm. The smart contract (SmartContracts.m) can validate all the real hazards from the fake ones.
+4. Consensus Algorithm: a  Practical  Byzantine  Fault  Tolerance  consensus  algorithm  was  used  because  of  the vehicular network's need for real timing. A whole module was created (ConsensusAlgorithm.m) to implement this whole process in the simulation. Different types of packet were used for each step of PBFT.
